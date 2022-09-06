@@ -20,8 +20,6 @@ POST '/register'
 
 200 OK
 
-Set-Cookie: session=xxx
-
 ### 1.2. users login
 
 ##### 1.2.0.1. Request
@@ -41,11 +39,7 @@ POST '/login'
 
 200 OK
 
-```json{.line-numbers}
-{
-    "login-status" : "1/0"
-}
-```
+set-cookie: session = xxx
 
 ### 1.3. users search artists
 
@@ -67,7 +61,7 @@ GET '/search-artist?target=artist-name'
 
 ```
 
-### 1.4. users search album by album id
+### 1.4. given album id, get album information (not for user)
 
 ##### 1.4.0.1. Request 
 
@@ -111,7 +105,7 @@ GET '/search-album-name?target=album-name'
 
 ##### 1.6.0.1. Request
 
-GET '/add-album?target=album-id'
+POST '/add-album?target=album-id'
 
 ##### 1.6.0.2. Response
 
@@ -121,7 +115,7 @@ GET '/add-album?target=album-id'
 
 ##### 1.7.0.1. Request
 
-GET '/remove-album?target=album-id'
+POST '/remove-album?target=album-id'
 
 ##### 1.7.0.2. Response
 
@@ -137,35 +131,21 @@ GET '/play&target=track-id'
 
 200 OK
 
-```http{.line-numbers}
-Content-Type: multipart/form-data; boundary="boundary"
-
---boundary--
-
-mp3 file
-
---boundary--
-
-```
 ```json{.line-numbers}
 
 {
     "name" : "xxx",
     "length" : "xxx",
-    "lastPlay" : "xx:xx:xx"
+    "lastPlay" : "xx:xx:xx",
+    "url" : "xx"
 }
 ```
-```http{.line-numbers}
---boundary--
-
-```
-
 
 ### 1.9. when a track is played, record the current time
 
 ##### 1.9.0.1. Request
 
-GET '/track-lastplay?target=track-id&time=current-time'
+POST '/track-lastplay?target=track-id&time=current-time'
 
 ##### 1.9.0.2. Response
 
@@ -183,29 +163,17 @@ Content-Type: multipart/form-data; boundary="boundary"
 --boundary--
 
 ```
-```json{.line-numbers}
 
-{
-    "name" : "xxx", 
-    "artist" : "xxx",
-    "tracks" : [
-        "trackName1", "trackName2"
-    ]
-}
-```
-```http{.line-numbers}
---boundary--
+use XMLHttpRequest FormData
 
-mp3 file
-
---boundary--
-
-mp3 file
-
---boundary
+```javascript{.line-numbers}
+var formData = new FormData()
+formData.append("name", "xxx")
+formData.append("artist", "xxx")
+formData.append("trackName1", file)
+formData.append("trackName1", file)
 
 ```
-
 
 ##### 1.10.0.2. Response
 
@@ -277,7 +245,7 @@ header and body are the same as user upload albums
 
 ##### 2.10.0.1. Request
 
-GET 'admin/remove?target=album-id'
+POST 'admin/remove?target=album-id'
 
 ##### 2.10.0.2. Response
 
@@ -303,7 +271,10 @@ GET 'admin/check-upload'
                 "id" : "xxx",
                 "name" : "xxx", 
                 "artist" : "xxx",
-                "tracks" : ["trackname1", "trackname2"]
+                "tracks" : [
+                    {"trackID" : "xxx", "trackName" : "xxx"},
+                    {"trackID" : "xxx", "trackName" : "xxx"}
+                    ]
             }
         }, 
         {
@@ -313,7 +284,10 @@ GET 'admin/check-upload'
                 "id" : "xxx",
                 "name" : "xxx", 
                 "artist" : "xxx",
-                "tracks" : ["trackname1", "trackname2"]
+                "tracks" : [
+                    {"trackID" : "xxx", "trackName" : "xxx"},
+                    {"trackID" : "xxx", "trackName" : "xxx"}
+                    ]
             }
         }
     ]
@@ -332,11 +306,13 @@ POST 'admin/reply'
     "reply" : [
         {
             "userID" : "xxx",
-            "albumID" : "xxx"
+            "albumID" : "xxx",
+            "success" : "1/0"
         },
         {
             "userID" : "xxx",
-            "albumID" : "xxx"
+            "albumID" : "xxx",
+            "success" : "1/0"
         }
     ]
 }
@@ -412,16 +388,4 @@ create table Upload
     foreign key(userID) references User(userID),
     foreign key(albumID) references Album(albumID)
 );
-
-
-
-
-
-
-
-
-
-
-
-
-
+```
