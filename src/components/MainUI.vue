@@ -1,13 +1,25 @@
 <template>
   <div id="navigator">
-    <img alt="Vue logo" src="../icons/logo.png" id="logo" draggable="false" />
-    <input
-      autocomplete="off"
-      tabindex="1"
-      placeholder=" Search..."
-      type="text"
-      class="search-box-input"
-    />
+    <div id="logo-div">
+      <img alt="Vue logo" src="../icons/logo.png" id="logo" draggable="false" />
+      <ul id="user-dropdown">
+        <li class="dropdown-item">User</li>
+      </ul>
+    </div>
+    <div id="search-box">
+      <div name="cat" id="search-select">
+        <label value="all" class="select-item">All</label>
+        <label value="1" class="select-item">Artist</label>
+        <label value="2" class="select-item">Album</label>
+      </div>
+      <input
+        autocomplete="off"
+        tabindex="1"
+        placeholder=" Search..."
+        type="text"
+        class="search-box-input"
+      />
+    </div>
     <div id="item-controls">
       <Transition name="buttons-up" mode="out-in">
         <div
@@ -55,7 +67,7 @@
           />
         </div>
       </Transition>
-      <Transition name="buttons-up"  mode="out-in">
+      <Transition name="buttons-up" mode="out-in">
         <div
           class="button"
           id="edit-button"
@@ -101,7 +113,7 @@
           />
         </div>
       </Transition>
-      <Transition name="buttons-up"  mode="out-in">
+      <Transition name="buttons-up" mode="out-in">
         <div
           class="button"
           id="return-button"
@@ -264,7 +276,7 @@ input.input:focus {
   left: 0px;
   right: 0px;
   position: fixed;
-  z-index: 5;
+  z-index: 100;
   min-height: calc(56px + env(safe-area-inset-top)) !important;
   transition: all 0.225s cubic-bezier(0.165, 0.84, 0.44, 1);
   contain: layout;
@@ -273,8 +285,9 @@ input.input:focus {
   max-width: 100%;
   font-family: Roboto, sans-serif;
   font-size: 16px;
-  overflow-x: hidden;
-  overflow-y: hidden;
+  /* overflow-x: hidden; */
+  /* overflow-y: hidden; */
+  overflow: visible;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
@@ -294,7 +307,7 @@ input.input:focus {
   box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 5px 8px 0 rgb(0 0 0 / 50%),
     0 1px 14px 0 rgb(0 0 0 / 70%) !important;
 }
-input.search-box-input {
+#search-box {
   border-radius: 12px;
   background-color: hsla(0, 0%, 100%, 0.75) !important;
   transition: box-shadow 0.2s ease-in-out, width 0.4s ease-in-out;
@@ -307,18 +320,51 @@ input.search-box-input {
   will-change: box-shadow;
   font-family: Roboto, sans-serif;
   font-size: 16px;
-  overflow-x: auto;
+  overflow-x: visible;
   position: relative;
   top: calc(50% - 16px);
   float: left;
   padding-left: 10px;
   margin-left: 20px;
 }
-input.search-box-input:hover {
+#search-select {
+  padding: 4px 0 4px 5px;
+    min-width: 35px;
+    height: 100%;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    background-color: transparent;
+    background-image: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+    border-right: 1px solid #DDD;
+    color: #000;
+}
+input.search-box-input {
+  width: 120px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    box-shadow: none;
+      background: transparent;
+    line-height: 20px;
+    width: 160px;
+    height: 100%;
+    border: none;
+    -webkit-appearance: caret;
+}
+input.search-box-input:focus {
+  outline: none !important;
+}
+#search-box:hover {
   box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 5px 8px 0 rgb(0 0 0 / 14%),
     0 1px 14px 0 rgb(0 0 0 / 70%) !important;
 }
-input.search-box-input:focus {
+#search-box:focus {
   outline: none !important;
   width: 40%;
 }
@@ -468,9 +514,46 @@ input.search-box-input:focus {
   opacity: 0;
   transform: translateY(30px);
 }
-
 .buttons-up-leave-to {
   opacity: 0;
   transform: translateY(-30px);
+}
+#logo-div {
+  height: 100%;
+  float: left;
+  overflow: visible;
+}
+#user-dropdown {
+  background-color: hsla(0, 0%, 100%, 1) !important;
+  border-radius: 20px;
+  will-change: visibility;
+  position: absolute;
+  z-index: 99;
+  width: 20%;
+  top: 66px;
+  left: 0px;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.25s, visibility 0.25s, transform 0.25s;
+  margin: 0 auto;
+  list-style-type: none;
+  padding: 5px;
+}
+#logo-div:hover #user-dropdown {
+  pointer-events: auto;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+#search-select {
+  display:flex;
+  flex-direction: column;
+  position:relative;
+  height: 100%;
+
+}
+.select-item {
+  padding: 5px;
 }
 </style>
