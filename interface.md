@@ -389,3 +389,5 @@ create table Upload
     foreign key(albumID) references Album(albumID)
 );
 ```
+
+add one line to interface.md
