@@ -1,5 +1,5 @@
 <template>
-  <div id="navigator">
+  <!-- <div id="navigator">
     <div id="logo-div">
       <img alt="Vue logo" src="../icons/logo.png" id="logo" draggable="false" />
       <ul id="user-dropdown">
@@ -7,11 +7,6 @@
       </ul>
     </div>
     <div id="search-box">
-      <div name="cat" id="search-select">
-        <label value="all" class="select-item">All</label>
-        <label value="1" class="select-item">Artist</label>
-        <label value="2" class="select-item">Album</label>
-      </div>
       <input
         autocomplete="off"
         tabindex="1"
@@ -160,21 +155,64 @@
         </div>
       </Transition>
     </div>
-  </div>
+  </div> -->
+  <el-affix>
+    <el-menu
+      default-active="1"
+      id="navigator"
+      mode="horizontal"
+      @select="handleSelect"
+      :ellipsis="false"
+    >
+      <!-- <el-space spacer="|"> -->
+        <el-menu-item index="1"
+          ><el-avatar :size="55" :src="require('@/icons/logo.png')" /></el-menu-item>
+        <el-menu-item index="2"
+          ><el-icon size="55px"> <Setting /> </el-icon
+        ></el-menu-item>
+        <el-menu-item index="3"
+          ><el-icon size="55px"> <Search /> </el-icon
+        ></el-menu-item>
+        <div class="flex-grow" />
+        <el-menu-item index="3"
+          ><el-icon size="55px"> <Plus /> </el-icon
+        ></el-menu-item>
+      <!-- </el-space> -->
+    </el-menu>
+    <el-input v-model="input3" placeholder="Please input" id="search-box">
+      <template #prepend>
+        <el-select v-model="select" placeholder="All" style="width: 115px">
+          <el-option label="All" value="1" />
+          <el-option label="Artist" value="2" />
+          <el-option label="Album" value="3" />
+        </el-select>
+      </template>
+    </el-input>
+  </el-affix>
   <div id="body">
     <Transition name="add-item-up">
       <div id="add-div" v-if="ifEditShow"></div>
     </Transition>
   </div>
+  <el-backtop :right="100" :bottom="100" />
 </template>
 
 <script>
+// import BaseHeader from "@/components/layouts/BaseHeader.vue"
+// import { mdiAccount } from '@mdi/js'
+// import SvgIcon from '@jamescoyle/vue-icon'
 export default {
   name: "MainUI",
   data() {
     return {
       ifEditShow: false,
+      icons: {
+        // mdiAccount,
+      },
     };
+  },
+  components: {
+    // SvgIcon,
   },
   methods: {
     login() {
@@ -203,6 +241,9 @@ export default {
     },
     openSettings() {
       return;
+    },
+    handleSelect(key, keyPath) {
+      console.log(key, keyPath);
     },
   },
 };
@@ -270,7 +311,7 @@ input.input:focus {
   filter: invert(0.3);
 }
 #navigator {
-  height: 32px;
+  /* height: 32px;
   margin-top: 0px;
   transform: translateY(0px);
   left: 0px;
@@ -284,29 +325,25 @@ input.input:focus {
   flex: 1 1 auto;
   max-width: 100%;
   font-family: Roboto, sans-serif;
-  font-size: 16px;
-  /* overflow-x: hidden; */
-  /* overflow-y: hidden; */
   overflow: visible;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  -webkit-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%; */
   background-color: hsla(0, 0%, 100%, 0.5) !important;
   -webkit-backdrop-filter: blur(5px);
   backdrop-filter: blur(5px);
   color: #000 !important;
-  padding: 5px 10px;
+  /* padding: 5px 10px; */
 }
 #logo {
-  height: 100%;
-  float: left;
+  height: 55px;
   transition: box-shadow 0.1s ease-in-out;
   border-radius: 15px;
 }
-#logo:hover {
+/* #logo:hover {
   box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 5px 8px 0 rgb(0 0 0 / 50%),
     0 1px 14px 0 rgb(0 0 0 / 70%) !important;
-}
+} */
 #search-box {
   border-radius: 12px;
   background-color: hsla(0, 0%, 100%, 0.75) !important;
@@ -329,33 +366,33 @@ input.input:focus {
 }
 #search-select {
   padding: 4px 0 4px 5px;
-    min-width: 35px;
-    height: 100%;
-    border: none;
-    outline: none;
-    box-shadow: none;
-    background-color: transparent;
-    background-image: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    -moz-border-radius: 0;
-    -webkit-border-radius: 0;
-    border-radius: 0;
-    border-right: 1px solid #DDD;
-    color: #000;
+  min-width: 35px;
+  height: 100%;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background-color: transparent;
+  background-image: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  -moz-border-radius: 0;
+  -webkit-border-radius: 0;
+  border-radius: 0;
+  border-right: 1px solid #ddd;
+  color: #000;
 }
 input.search-box-input {
   width: 120px;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    box-shadow: none;
-      background: transparent;
-    line-height: 20px;
-    width: 160px;
-    height: 100%;
-    border: none;
-    -webkit-appearance: caret;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  box-shadow: none;
+  background: transparent;
+  line-height: 20px;
+  width: 160px;
+  height: 100%;
+  border: none;
+  -webkit-appearance: caret;
 }
 input.search-box-input:focus {
   outline: none !important;
@@ -484,6 +521,7 @@ input.search-box-input:focus {
 #body {
   width: 100%;
   height: 100%;
+  display: flex;
 }
 #add-div {
   width: calc(100% - 20px);
@@ -547,13 +585,15 @@ input.search-box-input:focus {
   transform: translateY(0);
 }
 #search-select {
-  display:flex;
+  display: flex;
   flex-direction: column;
-  position:relative;
+  position: relative;
   height: 100%;
-
 }
 .select-item {
   padding: 5px;
+}
+.flex-grow {
+  flex-grow: 1;
 }
 </style>

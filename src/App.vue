@@ -1,28 +1,28 @@
 <template>
-  <Transition name="slide" mode="out-in">
-    <div id="not-logged-in" v-if="!ifLoggedIn">
-      <img
-        alt="Vue logo"
-        src="./icons/logo.png"
-        style="width: 150px"
-        draggable="false"
-      />
-      <Transition name="slide-up" mode="out-in">
-        <LoginWindow
-          v-if="currentWindow === 'LoginWindow'"
-          @login="login"
-          @register="register"
+    <Transition name="slide" mode="out-in">
+      <div id="not-logged-in" v-if="!ifLoggedIn">
+        <img
+          alt="Vue logo"
+          :src="require('@/icons/logo.png')"
+          style="width: 150px; height: 150px"
+          draggable="false"
         />
-        <RegisterWindow
-          v-else-if="currentWindow === 'RegisterWindow'"
-          @cancel="cancel"
-        />
-      </Transition>
-    </div>
-    <div id="logged-in" v-else-if="ifLoggedIn">
-      <MainUI />
-    </div>
-  </Transition>
+        <Transition name="slide-up" mode="out-in">
+          <LoginWindow
+            v-if="currentWindow === 'LoginWindow'"
+            @login="login"
+            @register="register"
+          />
+          <RegisterWindow
+            v-else-if="currentWindow === 'RegisterWindow'"
+            @cancel="cancel"
+          />
+        </Transition>
+      </div>
+      <div id="logged-in" v-else-if="ifLoggedIn">
+        <MainUI />
+        </div>
+    </Transition>
 </template>
 
 <script>
@@ -81,8 +81,7 @@ body {
   padding: 0;
   overflow: hidden;
 }
-.slide-up-enter-active
-{
+.slide-up-enter-active {
   animation: bounceIn;
   animation-duration: 0.5s;
 }
@@ -90,7 +89,7 @@ body {
   animation: fadeIn;
   animation-duration: 0.5s;
 }
-.slide-up-leave-active{
+.slide-up-leave-active {
   animation: backOutDown;
   animation-duration: 0.2s;
 }
@@ -102,7 +101,6 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  
 }
 #logged-in {
   width: 100%;
