@@ -13,8 +13,8 @@ class requestHandler(http.server.BaseHTTPRequestHandler):
         path = url.path
         query = parse_qs(url.query)
         if path == '/search-album-id':
-            album_id = query['target']
-            print(album_id[0])
+            album_id = query['target'][0]
+            print("album id: %s" % album_id)
             self.send_response(200)
             self.send_header('Content-Type', 'application/json;charset=UTF-8')
             album_info = {
@@ -29,7 +29,21 @@ class requestHandler(http.server.BaseHTTPRequestHandler):
             self.send_header('Content-Length', len(response_content))
             self.end_headers()
             self.wfile.write(response_content)
-
+        elif path == '/search-artist':
+            artist_name = query['target'][0]
+            print("artist name: %s" % artist_name)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json;charset-UTF-8')
+            artist_info = {
+                "albums" : [
+                    {"albumID": "114", "albumName": "kunkun"},
+                    {"albumID": "514", "albumName": "basketball"}
+                ]
+            }
+            response_content = json.dumps(artist_info).encode('utf-8')
+            self.send_header('Content-Length', len(response_content))
+            self.end_headers()
+            self.wfile.write(response_content)
         else:
             self.serve_html()
 
@@ -40,11 +54,24 @@ class requestHandler(http.server.BaseHTTPRequestHandler):
 
         if path == '/register':
             self.send_response(200)
+            self.send_header('Content-Type', 'text/html')
+            self.end_headers()
+            self.wfile.write(bytes("fuck", 'utf-8'))
             length = int(self.headers['Content-Length'])
             request_content = json.loads(
                 self.rfile.read(length).decode('utf-8'))
-            print(request_content['auth']['user-name'])
-            print(request_content['auth']['password'])
+            print("register:")
+            print("user-name: %s" % request_content['auth']['user-name'])
+            print("user-name: %s" % request_content['auth']['password'])
+        elif path == '/login':
+            self.send_response(200)
+            length = int(self.headers['Content-Length'])
+            request_content = json.loads(self.rfile.read(length).decode('utf-8'))
+            print("login:")
+            print("user-name: %s" % request_content['auth']['user-name'])
+            print("user-name: %s" % request_content['auth']['password'])           
+        else:
+            pass
 
     def serve_html(self):
         self.send_response(200)
