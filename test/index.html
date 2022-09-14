@@ -6,22 +6,40 @@
 </head>
 
 <body>
-    <button id="register">register</button>
-    <div id="response"></div>
+    <div>
+        <button id="register">register</button>
+        <div id="response"></div>
+    </div>
+    <div>
+        <button id="getAlbum">getAlbum</button>
+        <pre id="albumInfo"></pre>
+    </div>
     <script>
         let button_register = document.getElementById('register');
+        let button_getAlbum = document.getElementById('getAlbum');
+
         button_register.addEventListener('click', function () {
-            let req = new XMLHttpRequest()
+            let req = new XMLHttpRequest();
             req.addEventListener('load', function () {
                 document.getElementById('response').innerHTML = req.responseText;
-            })
+            });
             req.open('POST', '/register');
             req.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-            content = JSON.stringify({"auth": {"user-name": "cxk", "password": "123456"}});
+            content = JSON.stringify({ "auth": { "user-name": "cxk", "password": "123456" } });
             length = (new TextEncoder().encode(content)).length;
             req.setRequestHeader('Content-Length', length);
             req.send(content);
         });
+
+        button_getAlbum.addEventListener('click', function(){
+            let req = new XMLHttpRequest();
+            req.addEventListener('load', function(){
+                document.getElementById('albumInfo').innerHTML = JSON.stringify(JSON.parse(req.responseText), null, 4);
+            });
+            req.open('GET', '/search-album-id?target=114514');
+            req.send();
+        });
+
 
     </script>
 </body>
