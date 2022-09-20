@@ -20,7 +20,7 @@
         </Transition>
       </div>
       <div id="logged-in" v-else-if="ifLoggedIn">
-        <MainUI />
+        <MainUI @log-out="handleLogout"/>
         </div>
     </Transition>
 </template>
@@ -53,6 +53,9 @@ export default {
     },
     login() {
       this.ifLoggedIn = true;
+    },
+    handleLogout() {
+      this.ifLoggedIn = false;
     },
   },
 };

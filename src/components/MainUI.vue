@@ -156,7 +156,7 @@
       </Transition>
     </div>
   </div> -->
-  <el-affix>
+  <div id="top-bar">
     <el-menu
       default-active="1"
       id="navigator"
@@ -165,34 +165,102 @@
       :ellipsis="false"
     >
       <!-- <el-space spacer="|"> -->
-        <el-menu-item index="1"
-          ><el-avatar :size="55" :src="require('@/icons/logo.png')" /></el-menu-item>
-        <el-menu-item index="2"
-          ><el-icon size="55px"> <Setting /> </el-icon
-        ></el-menu-item>
-        <el-menu-item index="3"
+      <el-menu-item index="1"
+        ><el-avatar :size="55" :src="require('@/icons/logo.png')"
+      /></el-menu-item>
+      <el-menu-item index="2"
+        ><el-icon size="55px"> <Setting /> </el-icon
+      ></el-menu-item>
+      <!-- <el-menu-item index="3"
           ><el-icon size="55px"> <Search /> </el-icon
-        ></el-menu-item>
-        <div class="flex-grow" />
-        <el-menu-item index="3"
-          ><el-icon size="55px"> <Plus /> </el-icon
-        ></el-menu-item>
+        ></el-menu-item> -->
+      <el-menu-item index="3"
+        ><el-icon size="55px"> <Plus /> </el-icon
+      ></el-menu-item>
+      <div class="flex-grow" />
+      <el-menu-item index="4">
+        <el-icon size="55px" color="#FF0000"><SwitchButton /></el-icon>
+      </el-menu-item>
       <!-- </el-space> -->
     </el-menu>
-    <el-input v-model="input3" placeholder="Please input" id="search-box">
-      <template #prepend>
-        <el-select v-model="select" placeholder="All" style="width: 115px">
-          <el-option label="All" value="1" />
-          <el-option label="Artist" value="2" />
-          <el-option label="Album" value="3" />
-        </el-select>
-      </template>
-    </el-input>
-  </el-affix>
+    <transition name="el-zoom-in-center">
+      <el-input
+        v-model="input3"
+        placeholder="Please input"
+        id="search-box"
+        v-if="ifSearchShow"
+      >
+        <template #prepend>
+          <el-select v-model="select" placeholder="All" style="width: 115px">
+            <el-option label="All" value="1" />
+            <el-option label="Artist" value="2" />
+            <el-option label="Album" value="3" />
+          </el-select>
+        </template>
+      </el-input>
+      <!-- <div v-else-if="!ifSearchShow" style="height:20px;"/> -->
+    </transition>
+  </div>
   <div id="body">
     <Transition name="add-item-up">
-      <div id="add-div" v-if="ifEditShow"></div>
+      <div id="add-div" v-if="currentTab == 'upload'">
+        <el-upload
+          id="upload-demo"
+          drag
+          action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+          multiple
+          :auto-upload="false"
+          :on-change="handleChange"
+          v-model:file-list="fileList"
+        >
+          <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+          <div class="el-upload__text">
+            Drop file here or <em>click to upload</em>
+          </div>
+          <template #tip>
+            <div class="el-upload__tip">
+              jpg/png files with a size less than 500kb
+            </div>
+          </template>
+        </el-upload>
+      </div>
+      <div id="music-list-div" v-else-if="currentTab == 'main'">
+        <!-- <el-scrollbar> -->
+        <ul id="music-list-ul">
+          <li class="music-card" v-for="item in musicList" :key="item">
+            <el-card :body-style="{ padding: '0px' }">
+              <img
+                src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
+                class="image"
+              />
+              <div style="padding: 14px">
+                <span>Yummy hamburger</span>
+                <div class="bottom">
+                  <time class="time">{{ currentDate }}</time>
+                  <el-button text class="button">Operating</el-button>
+                </div>
+              </div>
+            </el-card>
+          </li>
+        </ul>
+        <!-- </el-scrollbar> -->
+      </div>
     </Transition>
+  </div>
+  <div id="tool-bar">
+    <el-space direction="vertical">
+      <el-button icon="Search" size="large" circle @click="showSearchBox" />
+      <el-button type="primary" icon="Edit" size="large" circle />
+      <el-button
+        type="success"
+        icon="Check"
+        size="large"
+        circle
+        @click="handleCheck"
+      />
+      <el-button type="warning" icon="Star" size="large" circle />
+      <el-button type="danger" icon="Delete" size="large" circle />
+    </el-space>
   </div>
   <el-backtop :right="100" :bottom="100" />
 </template>
@@ -201,14 +269,32 @@
 // import BaseHeader from "@/components/layouts/BaseHeader.vue"
 // import { mdiAccount } from '@mdi/js'
 // import SvgIcon from '@jamescoyle/vue-icon'
+import { ElMessage, ElMessageBox } from "element-plus";
+const axios = require("axios");
+
 export default {
   name: "MainUI",
   data() {
     return {
-      ifEditShow: false,
+      currentTab: "main", // main, settings, upload
+      ifSearchShow: false,
       icons: {
         // mdiAccount,
       },
+      musicList: [
+        "music1",
+        "music2",
+        "music3",
+        "music4",
+        "music5",
+        "music6",
+        "music7",
+        "music8",
+        "music9",
+        "music10",
+        "music11",
+      ],
+      fileList: [],
     };
   },
   components: {
@@ -242,8 +328,54 @@ export default {
     openSettings() {
       return;
     },
-    handleSelect(key, keyPath) {
-      console.log(key, keyPath);
+    handleSelect(key) {
+      if (key == 1) {
+        this.currentTab = "main";
+      } else if (key == 2) {
+        this.currentTab = "settings";
+      } else if (key == 3) {
+        this.currentTab = "upload";
+        this.ifSearchShow = false;
+      } else if (key == 4) {
+        ElMessageBox.confirm("Confirm to logout?", "Warning", {
+          confirmButtonText: "OK",
+          cancelButtonText: "Cancel",
+          type: "warning",
+        })
+          .then(() => {
+            this.$emit("log-out");
+            ElMessage({
+              type: "success",
+              message: "Successfully logout",
+            });
+          })
+          .catch(() => {
+            ElMessage({
+              type: "info",
+              message: "Logout canceled",
+            });
+          });
+      }
+    },
+    showSearchBox() {
+      this.ifSearchShow = !this.ifSearchShow;
+    },
+    handleChange(uploadFile) {
+      this.fileList.push(uploadFile);
+      console.log(this.fileList);
+    },
+    handleCheck() {
+      axios
+        .post("/upload", {
+          data: this.$data,
+        })
+        .then(function (response) {
+          console.log(response);
+        })
+        .catch(function (error) {
+          console.log(error);
+          return;
+        });
     },
   },
 };
@@ -522,6 +654,8 @@ input.search-box-input:focus {
   width: 100%;
   height: 100%;
   display: flex;
+  /* overflow: auto; */
+  transition: all 0.2s ease-in-out;
 }
 #add-div {
   width: calc(100% - 20px);
@@ -532,7 +666,7 @@ input.search-box-input:focus {
   background-color: hsla(0, 0%, 100%, 0.7) !important;
   box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 5px 8px 0 rgb(0 0 0 / 14%),
     0 1px 14px 0 rgb(0 0 0 / 12%) !important;
-  border-radius: 30px;
+  border-radius: 5px;
   backdrop-filter: blur(5px);
   transition: all 0.5s ease-in-out;
 }
@@ -595,5 +729,56 @@ input.search-box-input:focus {
 }
 .flex-grow {
   flex-grow: 1;
+}
+#tool-bar {
+  position: fixed;
+  bottom: 20px;
+  right: 25px;
+}
+#upload-demo {
+  border-radius: 20px;
+  height: 100%;
+}
+#music-list-div {
+  /* width: 100%; */
+  /* height: 100%; */
+  transition: all 0.5s ease-in-out;
+  overflow: auto;
+}
+#music-list-div::-webkit-scrollbar {
+  display: block;
+  width: 12px;
+}
+#music-list-div::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#music-list-div::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.804);
+  border-right: none;
+  border-left: none;
+}
+
+#music-list-div::-webkit-scrollbar-track-piece:end {
+  background: transparent;
+  margin-bottom: 10px;
+}
+
+#music-list-div::-webkit-scrollbar-track-piece:start {
+  background: transparent;
+  margin-top: 64px;
+}
+#music-list-ul {
+  padding: 0;
+  padding-top: 80px;
+}
+.music-card {
+  display: inline-block;
+  margin: 20px;
+}
+#top-bar {
+  position: fixed;
+  width: 100%;
+  z-index: 100;
 }
 </style>
