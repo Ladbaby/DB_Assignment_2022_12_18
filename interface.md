@@ -153,7 +153,7 @@ if not in login status:
 
 ##### 1.8.0.1. Request
 
-GET '/play&target=track-id'
+GET '/play?target=track-id'
 
 ##### 1.8.0.2. Response
 
@@ -395,26 +395,26 @@ create table Album
     albumID varchar(10) NOT NULL,
     albumName varchar(50) NOT NULL,
     lastPlay time,
-    primary key(albumID, trackID),
-    foreign key(trackID) references Track(trackID)
+    primary key(albumID),
+    foreign key(artistID) references Artist(artistID)
 );
 
 create table Track
 (
     trackID varchar(10) NOT NULL,
     trackName varchar(50) NOT NULL,
-    trackLength int NOT NULL,
+    trackLength time NOT NULL,
+    trackIndex int NOT NULL,
     lastPlay time,
-    primary key(trackID)
+    primary key(trackID),
+    foreign key(albumID) references Album(albumID)
 );
 
 create table Artist 
 (
     artistID varchar(10) NOT NULL,
     artistName varchar(30) NOT NULL,
-    albumID varchar(10) NOT NULL,
-    primary key(artistID, albumID),
-    foreign key(albumID) references Album(albumID)
+    primary key(artistID),
 );
 
 create table User
