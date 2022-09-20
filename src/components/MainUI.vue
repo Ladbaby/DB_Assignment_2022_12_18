@@ -191,7 +191,7 @@
         v-if="ifSearchShow"
       >
         <template #prepend>
-          <el-select v-model="select" placeholder="All" style="width: 115px">
+          <el-select v-model="searchCat" placeholder="All" style="width: 115px">
             <el-option label="All" value="1" />
             <el-option label="Artist" value="2" />
             <el-option label="Album" value="3" />
@@ -228,7 +228,7 @@
         <!-- <el-scrollbar> -->
         <ul id="music-list-ul">
           <li class="music-card" v-for="item in musicList" :key="item">
-            <el-card :body-style="{ padding: '0px' }">
+            <el-card :body-style="{ padding: '0px' }" shadow="always">
               <img
                 src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
                 class="image"
@@ -245,23 +245,96 @@
         </ul>
         <!-- </el-scrollbar> -->
       </div>
+      <el-container id="settings-div" v-else-if="currentTab == 'settings'">
+        <el-aside width="200px" id="settings-aside">
+          <el-scrollbar>
+            <el-menu :default-openeds="['1', '3']" id="settings-menu">
+              <el-menu-item index="1">
+                <template #title>
+                  <el-icon><User /></el-icon>User
+                </template>
+              </el-menu-item>
+              <el-menu-item index="2">
+                <template #title>
+                  <el-icon><PictureRounded /></el-icon>Appearance
+                </template>
+              </el-menu-item>
+            </el-menu>
+          </el-scrollbar>
+        </el-aside>
+        <el-main id="settings-main">
+          <el-scrollbar>
+            <el-row :gutter="20">
+              <el-col :span="4">
+                <el-avatar
+                  src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+                  :size="100"
+                />
+              </el-col>
+              <el-col :span="4">
+                <h2>Administrator</h2>
+              </el-col>
+            </el-row>
+            <hr style="width:95%"/>
+          </el-scrollbar>
+        </el-main>
+      </el-container>
     </Transition>
   </div>
-  <div id="tool-bar">
-    <el-space direction="vertical">
-      <el-button icon="Search" size="large" circle @click="showSearchBox" />
-      <el-button type="primary" icon="Edit" size="large" circle />
-      <el-button
-        type="success"
-        icon="Check"
-        size="large"
-        circle
-        @click="handleCheck"
-      />
-      <el-button type="warning" icon="Star" size="large" circle />
-      <el-button type="danger" icon="Delete" size="large" circle />
-    </el-space>
-  </div>
+  <Transition name="add-item-up">
+    <div id="tool-bar" v-if="currentTab != 'settings'">
+      <!-- <Transition name="tool-bar-transition"> -->
+      <el-space direction="vertical">
+        <Transition name="tool-bar-transition">
+          <el-button
+            icon="Search"
+            size="large"
+            circle
+            @click="showSearchBox"
+            v-if="currentTab == 'main'"
+          />
+        </Transition>
+        <Transition name="tool-bar-transition">
+          <el-button
+            type="primary"
+            icon="Edit"
+            size="large"
+            circle
+            v-if="currentTab == 'main'"
+          />
+        </Transition>
+        <Transition name="tool-bar-transition">
+          <el-button
+            type="success"
+            icon="Check"
+            size="large"
+            circle
+            @click="handleCheck"
+            v-if="currentTab == 'upload'"
+          />
+        </Transition>
+        <Transition name="tool-bar-transition">
+          <el-button
+            type="warning"
+            icon="Star"
+            size="large"
+            circle
+            v-if="currentTab == 'main'"
+          />
+        </Transition>
+        <Transition name="tool-bar-transition">
+          <el-button
+            type="danger"
+            icon="Delete"
+            size="large"
+            circle
+            v-if="currentTab == 'main'"
+          />
+        </Transition>
+      </el-space>
+      <!-- </Transition> -->
+    </div>
+  </Transition>
   <el-backtop :right="100" :bottom="100" />
 </template>
 
@@ -295,6 +368,7 @@ export default {
         "music11",
       ],
       fileList: [],
+      searchCat: "",
     };
   },
   components: {
@@ -734,6 +808,13 @@ input.search-box-input:focus {
   position: fixed;
   bottom: 20px;
   right: 25px;
+  background-color: hsla(0, 0%, 100%, 0.5) !important;
+  padding: 10px;
+  border-radius: 20px;
+  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 5px 8px 0 rgba(0, 0, 0, 0.14),
+    0 1px 14px 0 rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.5s ease-in-out;
+  backdrop-filter: blur(5px);
 }
 #upload-demo {
   border-radius: 20px;
@@ -775,10 +856,50 @@ input.search-box-input:focus {
 .music-card {
   display: inline-block;
   margin: 20px;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.music-card:hover {
+  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 5px 8px 0 rgba(0, 0, 0, 0.14),
+    0 1px 14px 0 rgba(0, 0, 0, 0.5) !important;
+  transform: scale(1.03) perspective(0px);
 }
 #top-bar {
   position: fixed;
   width: 100%;
   z-index: 100;
+}
+.tool-bar-transition-enter-active {
+  transition: all 0.3s ease-in-out;
+}
+.tool-bar-transition-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+#settings-div {
+  /* overflow: hidden; */
+  width: calc(100% - 20px);
+  height: calc(100% - 86px);
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  /* background-color: hsla(0, 0%, 100%, 0.7) !important; */
+  /* box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 5px 8px 0 rgb(0 0 0 / 14%), */
+  /* 0 1px 14px 0 rgb(0 0 0 / 12%) !important; */
+  border-radius: 10px;
+  /* backdrop-filter: blur(5px); */
+  transition: all 0.5s ease-in-out;
+}
+#settings-aside {
+  border-radius: 10px;
+}
+#settings-menu {
+  border-radius: 10px;
+  min-height: 100vh;
+}
+#settings-main {
+  border-radius: 10px;
+  background-color: hsla(0, 0%, 100%, 0.9) !important;
+  backdrop-filter: blur(5px);
+  margin-left: 10px;
 }
 </style>
