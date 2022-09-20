@@ -20,6 +20,10 @@ POST '/register'
 
 200 OK
 
+if user-name is repeated:
+
+400 Bad Request
+
 ### 1.2. users login
 
 ##### 1.2.0.1. Request
@@ -41,6 +45,10 @@ POST '/login'
 
 set-cookie: session = xxx
 
+if login fail (e.g. wrong password)
+
+403 forbidden
+
 ### 1.3. users search artists
 
 ##### 1.3.0.1. Request
@@ -61,6 +69,10 @@ GET '/search-artist?target=artist-name'
 
 ```
 
+if not in login status: 
+
+403 forbidden
+
 ### 1.4. given album id, get album information (not for user)
 
 ##### 1.4.0.1. Request 
@@ -79,6 +91,10 @@ GET '/search-album-id?target=album-id'
     ]
 }
 ```
+
+if not in login status:
+
+403 forbidden
 
 ### 1.5. users search albums by name
 
@@ -101,6 +117,10 @@ GET '/search-album-name?target=album-name'
 }
 ```
 
+if not in login status:
+
+403 forbidden
+
 ### 1.6. users add album to personal collection
 
 ##### 1.6.0.1. Request
@@ -110,6 +130,10 @@ POST '/add-album?target=album-id'
 ##### 1.6.0.2. Response
 
 200 OK
+
+if not in login status:
+
+403 forbidden
 
 ### 1.7. users remove album from personal collection
 
@@ -121,11 +145,15 @@ POST '/remove-album?target=album-id'
 
 200 OK
 
+if not in login status:
+
+403 forbidden
+
 ### 1.8. play a track
 
 ##### 1.8.0.1. Request
 
-GET '/play&target=track-id'
+GET '/play?target=track-id'
 
 ##### 1.8.0.2. Response
 
@@ -140,6 +168,10 @@ GET '/play&target=track-id'
     "url" : "xx"
 }
 ```
+
+if not in login status:
+
+403 forbidden
 
 ### 1.9. when a track is played, record the current time
 
@@ -179,7 +211,13 @@ formData.append("trackName1", file)
 
 200 OK
 
+if not in login status: 
+
+403 forbidden
+
 ### 1.11. users make comments on albums
+
+##### 1.11.0.1 Request
 
 POST '/comment?target=album-id'
 
@@ -188,6 +226,14 @@ Content-Type: text
 
 comments
 ```
+
+##### 1.11.0.2 Response
+
+200 OK
+
+if not in login status:
+
+403 forbidden
 
 ### 1.12. users check album upload notification
 
@@ -207,6 +253,10 @@ GET '/check-upload-notification'
     ]
 }
 ```
+
+if not in login status:
+
+403 forbidden
 
 
 ## 2. Admin
@@ -241,6 +291,10 @@ header and body are the same as user upload albums
 
 200 OK
 
+if not in login status: 
+
+403 forbidden
+
 ### 2.10. Admin remove albums from database
 
 ##### 2.10.0.1. Request
@@ -250,6 +304,10 @@ POST 'admin/remove?target=album-id'
 ##### 2.10.0.2. Response
 
 200 OK
+
+if not in login status: 
+
+403 forbidden
 
 ### 2.11. Admin check user upload
 
@@ -294,6 +352,9 @@ GET 'admin/check-upload'
 }
 ```
 
+if not in login status: 
+
+403 forbidden
 
 ### 2.12. Admin reply user upload
 
@@ -322,6 +383,10 @@ POST 'admin/reply'
 
 200 OK
 
+if not in login status: 
+
+403 forbidden
+
 ## 3. Database Schema Design
 
 ```sql{.line-numbers}
@@ -330,26 +395,26 @@ create table Album
     albumID varchar(10) NOT NULL,
     albumName varchar(50) NOT NULL,
     lastPlay time,
-    primary key(albumID, trackID),
-    foreign key(trackID) references Track(trackID)
+    primary key(albumID),
+    foreign key(artistID) references Artist(artistID)
 );
 
 create table Track
 (
     trackID varchar(10) NOT NULL,
     trackName varchar(50) NOT NULL,
-    trackLength int NOT NULL,
+    trackLength time NOT NULL,
+    trackIndex int NOT NULL,
     lastPlay time,
-    primary key(trackID)
+    primary key(trackID),
+    foreign key(albumID) references Album(albumID)
 );
 
 create table Artist 
 (
     artistID varchar(10) NOT NULL,
     artistName varchar(30) NOT NULL,
-    albumID varchar(10) NOT NULL,
-    primary key(artistID, albumID),
-    foreign key(albumID) references Album(albumID)
+    primary key(artistID),
 );
 
 create table User
