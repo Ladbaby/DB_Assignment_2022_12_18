@@ -203,32 +203,116 @@
   </div>
   <div id="body">
     <Transition name="add-item-up">
-      <div id="add-div" v-if="currentTab == 'upload'">
-        <el-upload
-          id="upload-demo"
-          drag
-          action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-          multiple
-          :auto-upload="false"
-          :on-change="handleChange"
-          v-model:file-list="fileList"
-        >
-          <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-          <div class="el-upload__text">
-            Drop file here or <em>click to upload</em>
-          </div>
-          <template #tip>
-            <div class="el-upload__tip">
-              jpg/png files with a size less than 500kb
+      <el-container id="add-div" v-if="currentTab == 'upload'">
+        <el-header height="90px">
+          <el-steps
+            :active="stepActive"
+            finish-status="success"
+            id="step"
+            align-center
+          >
+            <el-step title="Step 1" description="upload files" />
+            <el-step title="Step 2" description="specify artist" />
+            <el-step title="Step 3" description="specify album" />
+          </el-steps>
+        </el-header>
+        <el-main id="upload-main">
+          <Transition name="slide-up" mode="out-in">
+          <el-upload
+            id="upload-demo"
+            drag
+            action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+            multiple
+            :auto-upload="false"
+            :on-change="handleChange"
+            v-model:file-list="fileList"
+            v-if="stepActive == 0"
+          >
+            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+            <div class="el-upload__text">
+              Drop file here or <em>click to upload</em>
             </div>
-          </template>
-        </el-upload>
-      </div>
+            <template #tip>
+              <div class="el-upload__tip">
+                jpg/png files with a size less than 500kb
+              </div>
+            </template>
+          </el-upload>
+          <div v-else-if="stepActive == 1" id="upload-artist-div">
+            <el-row :gutter="20">
+              <el-col :span="24">
+                <center>
+                  <h2>Enter artist's name:</h2>
+                </center>
+              </el-col>
+            </el-row>
+            <el-row :gutter="20">
+              <el-col :span="24">
+                <center>
+                  <input
+                    autocomplete="off"
+                    tabindex="1"
+                    placeholder="artist's name"
+                    type="text"
+                    class="input"
+                  />
+                </center>
+              </el-col>
+            </el-row>
+          </div>
+          <div v-else-if="stepActive == 2" id="upload-album-div">
+            <el-row :gutter="20">
+              <el-col :span="24">
+                <center>
+                  <h2>Enter album's name:</h2>
+                </center>
+              </el-col>
+            </el-row>
+            <el-row :gutter="20">
+              <el-col :span="24">
+                <center>
+                  <input
+                    autocomplete="off"
+                    tabindex="1"
+                    placeholder="album's name"
+                    type="text"
+                    class="input"
+                  />
+                </center>
+              </el-col>
+            </el-row>
+          </div>
+          </Transition>
+        </el-main>
+        <el-footer>
+          <el-row :gutter="20">
+            <el-col :span="6">
+              <el-button
+                type="primary"
+                icon="DArrowLeft"
+                size="large"
+                round
+                @click="back"
+              >
+                Back
+              </el-button>
+            </el-col>
+            <el-col :span="12"></el-col>
+            <el-col :span="6">
+              <el-button type="primary" size="large" round @click="next">
+                Next
+                <el-icon class="el-icon--right"><DArrowRight /></el-icon>
+              </el-button>
+            </el-col>
+          </el-row>
+        </el-footer>
+      </el-container>
       <div id="music-list-div" v-else-if="currentTab == 'main'">
         <!-- <el-scrollbar> -->
         <ul id="music-list-ul">
           <li class="music-card" v-for="item in musicList" :key="item">
-            <el-card :body-style="{ padding: '0px' }" shadow="always">
+            <el-card :body-style="{ padding: '5px' }" :style="{
+          borderRadius: '10px'}" shadow="always" Round>
               <img
                 src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
                 class="image"
@@ -275,14 +359,14 @@
                 <h2>Administrator</h2>
               </el-col>
             </el-row>
-            <hr style="width:95%"/>
+            <hr style="width: 95%" />
           </el-scrollbar>
         </el-main>
       </el-container>
     </Transition>
   </div>
   <Transition name="add-item-up">
-    <div id="tool-bar" v-if="currentTab != 'settings'">
+    <div id="tool-bar" v-if="currentTab == 'main'">
       <!-- <Transition name="tool-bar-transition"> -->
       <el-space direction="vertical">
         <Transition name="tool-bar-transition">
@@ -369,6 +453,7 @@ export default {
       ],
       fileList: [],
       searchCat: "",
+      stepActive: 0,
     };
   },
   components: {
@@ -436,7 +521,7 @@ export default {
     },
     handleChange(uploadFile) {
       this.fileList.push(uploadFile);
-      console.log(this.fileList);
+      console.log(uploadFile);
     },
     handleCheck() {
       axios
@@ -450,6 +535,12 @@ export default {
           console.log(error);
           return;
         });
+    },
+    back() {
+      this.stepActive > 0 ? this.stepActive-- : 0;
+    },
+    next() {
+      this.stepActive < 2 ? this.stepActive++ : 2;
     },
   },
 };
@@ -740,7 +831,7 @@ input.search-box-input:focus {
   background-color: hsla(0, 0%, 100%, 0.7) !important;
   box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 5px 8px 0 rgb(0 0 0 / 14%),
     0 1px 14px 0 rgb(0 0 0 / 12%) !important;
-  border-radius: 5px;
+  border-radius: 10px;
   backdrop-filter: blur(5px);
   transition: all 0.5s ease-in-out;
 }
@@ -818,7 +909,7 @@ input.search-box-input:focus {
 }
 #upload-demo {
   border-radius: 20px;
-  height: 100%;
+  /* height: 100%; */
 }
 #music-list-div {
   /* width: 100%; */
@@ -857,6 +948,7 @@ input.search-box-input:focus {
   display: inline-block;
   margin: 20px;
   transition: box-shadow 0.2s, transform 0.2s;
+  border-radius: 10px;
 }
 .music-card:hover {
   box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 5px 8px 0 rgba(0, 0, 0, 0.14),
@@ -901,5 +993,60 @@ input.search-box-input:focus {
   background-color: hsla(0, 0%, 100%, 0.9) !important;
   backdrop-filter: blur(5px);
   margin-left: 10px;
+}
+#step {
+  margin: 20px;
+}
+#upload-main {
+  margin: 20px;
+  border-radius: 10px;
+  background-color: hsla(0, 0%, 100%, 0.9) !important;
+  overflow: hidden;
+}
+#upload-artist-div, #upload-album-div {
+  width:100%;
+  height:100%;
+}
+input.input {
+  border-radius: 20px;
+  background-color: hsla(0, 0%, 100%, 0.75) !important;
+  transition: box-shadow 0.2s, transform 0.2s, width 0.2s;
+  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 5px 8px 0 rgba(0, 0, 0, 0.14),
+    0 1px 14px 0 rgba(0, 0, 0, 0.12) !important;
+  border: 0;
+  outline: 0;
+  color: rgba(0, 0, 0, 0.87);
+  min-height: 1em;
+  height: 50px;
+  width: 25%;
+  will-change: box-shadow;
+  font-family: Roboto, sans-serif;
+  font-size: 16px;
+  overflow-x: auto;
+  position: relative;
+  display: table-row;
+  padding-left: 10px;
+  margin: 30px;
+}
+input.input:hover {
+  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 5px 8px 0 rgba(0, 0, 0, 0.14),
+    0 1px 14px 0 rgba(0, 0, 0, 0.5) !important;
+  transform: scale(1.02) perspective(0px);
+}
+input.input:focus {
+  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 5px 8px 0 rgba(0, 0, 0, 0.14),
+    0 1px 14px 0 rgba(0, 0, 0, 0.7) !important;
+  width: 50%;
+}
+.image {
+  border-radius: 10px;
+}
+.slide-up-enter-active {
+  animation: flipInY;
+  animation-duration: 0.5s;
+}
+.slide-up-leave-active {
+  animation: zoomOut;
+  animation-duration: 0.2s;
 }
 </style>
