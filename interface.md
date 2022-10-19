@@ -407,7 +407,7 @@ create table Track
     trackIndex int NOT NULL,
     lastPlay time,
     primary key(trackID),
-    foreign key(albumID) references Album(albumID)
+    foreign key(albumID) references Album(albumID) ON DELETE CASCADE
 );
 
 create table Artist 
@@ -433,7 +433,7 @@ create table Comment
     content varchar(200) NOT NULL,
     primary key(userID, albumID),
     foreign key(userID) references User(userID),
-    foreign key(albumID) references Album(albumID)
+    foreign key(albumID) references Album(albumID) ON DELETE CASCADE
 );
 
 create table Collect
@@ -442,15 +442,19 @@ create table Collect
     albumID varchar(10) NOT NULL,
     primary key(userID, albumID),
     foreign key(userID) references User(userID),
-    foreign key(albumID) references Album(albumID)
+    foreign key(albumID) references Album(albumID) ON DELETE CASCADE
 );
 
 create table Upload
 (
     userID varchar(10) NOT NULL,
-    albumID varchar(10) NOT NULL,
-    primary key(userID, albumID),
+    albumID varchar(10) NOT NULL, // 临时分配
+    albumName varchar(50) NOT NULL,
+    trackID varchar(10) NOT NULL,
+    trackName varchar(50) NOT NULL,
+    artistName varchar(30) NOT NULL,
+    granted boolean NOT NULL,
+    primary key(userID, albumID, trackID),
     foreign key(userID) references User(userID),
-    foreign key(albumID) references Album(albumID)
 );
 ```
