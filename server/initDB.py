@@ -23,8 +23,6 @@ with connection.cursor() as cursor:
         """CREATE TABLE IF NOT EXISTS User(
                 userID TEXT NOT NULL,
                 userName TEXT NOT NULL,
-                password TEXT NOT NULL,
-                administrator INTEGER NOT NULL,
                 PRIMARY KEY(userID)
             );"""
     )
@@ -32,7 +30,9 @@ with connection.cursor() as cursor:
         """CREATE TABLE IF NOT EXISTS Album(
                 albumID TEXT NOT NULL,
                 albumName TEXT NOT NULL,
-                lastPlay TEXT,
+                lastPlay INTEGER,
+                uploaderID TEXT,
+                granted INTEGER NOT NULL,
                 artistID TEXT NOT NULL,
                 PRIMARY KEY(albumID),
                 FOREIGN KEY(artistID) REFERENCES Artist(artistID) ON DELETE CASCADE
@@ -42,9 +42,9 @@ with connection.cursor() as cursor:
         """CREATE TABLE IF NOT EXISTS Track(
                 trackID TEXT NOT NULL,
                 trackName TEXT NOT NULL,
-                trackLength TEXT NOT NULL,
+                trackLength REAL NOT NULL,
                 trackIndex INTEGER NOT NULL,
-                lastPlay TEXT,
+                lastPlay INTEGER,
                 albumID TEXT NOT NULL,
                 PRIMARY KEY(trackID),
                 FOREIGN KEY(albumID) REFERENCES Album(albumID) ON DELETE CASCADE
@@ -69,15 +69,17 @@ with connection.cursor() as cursor:
                 FOREIGN KEY(albumID) REFERENCES Album(albumID) ON DELETE CASCADE
             );"""
     )
-    cursor.execute(
-        """CREATE TABLE IF NOT EXISTS Upload(
-                userID TEXT NOT NULL,
-                albumID TEXT NOT NULL,
-                albumName TEXT NOT NULL,
-                trackID TEXT NOT NULL,
-                trackName TEXT NOT NULL,
-                granted INTEGER NOT NULL,
-                PRIMARY KEY(userID, albumID, trackID),
-                FOREIGN KEY(userID) REFERENCES User(userID)
-            )"""
-    )
+    # cursor.execute(
+    #     """CREATE TABLE IF NOT EXISTS Upload(
+    #             userID TEXT NOT NULL,
+    #             albumID TEXT NOT NULL,
+    #             albumName TEXT NOT NULL,
+    #             artistName TEXT NOT NULL,
+    #             trackID TEXT NOT NULL,
+    #             trackName TEXT NOT NULL,
+    #             trackIndex INTEGER NOT NULL,
+    #             granted INTEGER NOT NULL,
+    #             PRIMARY KEY(userID, albumID, trackID),
+    #             FOREIGN KEY(userID) REFERENCES User(userID)
+    #         )"""
+    # )
