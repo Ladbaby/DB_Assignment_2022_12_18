@@ -5,6 +5,8 @@
 
 ##### 1.1.0.1. Request
 
+提交注册信息:
+
 POST '/register'
 
 ```json{.line-numbers}
@@ -27,6 +29,8 @@ if user-name is repeated:
 ### 1.2. users login
 
 ##### 1.2.0.1. Request
+
+提交登陆信息
 
 POST '/login'
 
@@ -106,13 +110,29 @@ GET '/search-album-name?target=album-name'
 
 200 OK
 
+允许同名album存在, 所以可能返回多个albums
+
 ```json{.line-numbers}
 {
-    "name" : "xxx",
-    "artist" : "xxx",
-    "tracks" : [
-        {"trackID" : "xxx", "trackName" : "xxx"},
-        {"trackID" : "xxx", "trackName" : "xxx"}
+    "albums": [
+        {
+            "id" : "xxx",
+            "name" : "xxx",
+            "artist" : "xxx",
+            "tracks" : [
+                {"trackID" : "xxx", "trackName" : "xxx"},
+                {"trackID" : "xxx", "trackName" : "xxx"}
+            ]
+        },
+        {
+            "id" : "xxx",
+            "name" : "xxx",
+            "artist" : "xxx",
+            "tracks" : [
+                {"trackID" : "xxx", "trackName" : "xxx"},
+                {"trackID" : "xxx", "trackName" : "xxx"}
+            ]
+        },
     ]
 }
 ```
@@ -163,8 +183,9 @@ GET '/play?target=track-id'
 
 {
     "name" : "xxx",
-    "length" : "xxx",
-    "lastPlay" : "xx:xx:xx",
+    "length" : length, // measured in seconds
+    "lastPlay" : unix timestamp in integer,
+    // if no lastplay info, it will be set to -1
     "url" : "xx"
 }
 ```
@@ -178,6 +199,8 @@ if not in login status:
 ##### 1.9.0.1. Request
 
 POST '/track-lastplay?target=track-id&time=current-time'
+
+time is expressed in unix timestamp
 
 ##### 1.9.0.2. Response
 
@@ -248,8 +271,8 @@ GET '/check-upload-notification'
 ```json{.line-numbers}
 {
     "notification" : [
-        {"albumName" : "xxx", "success" : "1/0"},
-        {"albumName" : "xxx", "success" : "1/0"}
+        {"albumName" : "xxx", "status" : "success/fail/waiting"},
+        {"albumName" : "xxx", "status" : "success/fail/waiting"}
     ]
 }
 ```
@@ -366,12 +389,10 @@ POST 'admin/reply'
 {
     "reply" : [
         {
-            "userID" : "xxx",
             "albumID" : "xxx",
             "success" : "1/0"
         },
         {
-            "userID" : "xxx",
             "albumID" : "xxx",
             "success" : "1/0"
         }
@@ -392,45 +413,47 @@ if not in login status:
 ```sql{.line-numbers}
 create table Album
 (
-    albumID varchar(10) NOT NULL,
-    albumName varchar(50) NOT NULL,
-    lastPlay time,
+    albumID TEXT NOT NULL,
+    albumName TEXT NOT NULL,
+    lastPlay INTEGER, // unix timestamp
+    uploaderID TEXT,
+    granted INTEGER NOT NULL,
     primary key(albumID),
     foreign key(artistID) references Artist(artistID)
 );
 
 create table Track
 (
-    trackID varchar(10) NOT NULL,
-    trackName varchar(50) NOT NULL,
-    trackLength time NOT NULL,
-    trackIndex int NOT NULL,
-    lastPlay time,
+    trackID TEXT NOT NULL,
+    trackName TEXT NOT NULL,
+    trackLength REAL NOT NULL, // measured in seconds
+    trackIndex INTEGER NOT NULL,
+    lastPlay INTEGER, // unix timestamp
     primary key(trackID),
     foreign key(albumID) references Album(albumID) ON DELETE CASCADE
 );
 
 create table Artist 
 (
-    artistID varchar(10) NOT NULL,
-    artistName varchar(30) NOT NULL,
+    artistID TEXT NOT NULL,
+    artistName TEXT NOT NULL,
     primary key(artistID),
 );
 
 create table User
 (
-    userID varchar(10) NOT NULL
-    userName varchar(30) NOT NULL,
-    Password varchar(30) NOT NULL,
-    administrator boolean NOT NULL,
+    userID TEXT NOT NULL
+    userName TEXT NOT NULL,
+    -- Password TEXT NOT NULL,
+    -- administrator boolean NOT NULL, 使用django内置user model
     primary key(userID) 
 );
 
 create table Comment
 (
-    userID varchar(10) NOT NULL,
-    albumID varchar(10) NOT NULL,
-    content varchar(200) NOT NULL,
+    userID TEXT NOT NULL,
+    albumID TEXT NOT NULL,
+    content TEXT NOT NULL,
     primary key(userID, albumID),
     foreign key(userID) references User(userID),
     foreign key(albumID) references Album(albumID) ON DELETE CASCADE
@@ -438,23 +461,25 @@ create table Comment
 
 create table Collect
 (
-    userID varchar(10) NOT NULL,
-    albumID varchar(10) NOT NULL,
+    userID TEXT NOT NULL,
+    albumID TEXT NOT NULL,
     primary key(userID, albumID),
     foreign key(userID) references User(userID),
     foreign key(albumID) references Album(albumID) ON DELETE CASCADE
 );
 
-create table Upload
-(
-    userID varchar(10) NOT NULL,
-    albumID varchar(10) NOT NULL, // 临时分配
-    albumName varchar(50) NOT NULL,
-    trackID varchar(10) NOT NULL,
-    trackName varchar(50) NOT NULL,
-    artistName varchar(30) NOT NULL,
-    granted boolean NOT NULL,
-    primary key(userID, albumID, trackID),
-    foreign key(userID) references User(userID),
-);
+-- do not create new table for relation upload, merge this relation to table album
+-- create table Upload
+-- (
+--     userID varchar(10) NOT NULL,
+--     albumID varchar(10) NOT NULL, // 临时分配
+--     albumName varchar(50) NOT NULL,
+--     trackID varchar(10) NOT NULL,
+--     trackName varchar(50) NOT NULL,
+--     trackIndex INTEGER NOT NULL,
+--     artistName varchar(30) NOT NULL,
+--     granted INTEGER NOT NULL, // 0 未处理, 1 允许, -1 拒绝
+--     primary key(userID, albumID, trackID),
+--     foreign key(userID) references User(userID),
+-- );
 ```
