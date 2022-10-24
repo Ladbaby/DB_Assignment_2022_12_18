@@ -92,6 +92,10 @@ GET '/search-album-id?target=album-id'
     "tracks" : [
         {"trackID" : "xxx", "trackName" : "xxx"},
         {"trackID" : "xxx", "trackName" : "xxx"}
+    ],
+    "comments": [
+        {"userID": "xxx", "comment": "xxx"},
+        {"userID": "xxx", "comment": "xxx"}
     ]
 }
 ```
@@ -119,19 +123,11 @@ GET '/search-album-name?target=album-name'
             "id" : "xxx",
             "name" : "xxx",
             "artist" : "xxx",
-            "tracks" : [
-                {"trackID" : "xxx", "trackName" : "xxx"},
-                {"trackID" : "xxx", "trackName" : "xxx"}
-            ]
         },
         {
             "id" : "xxx",
             "name" : "xxx",
             "artist" : "xxx",
-            "tracks" : [
-                {"trackID" : "xxx", "trackName" : "xxx"},
-                {"trackID" : "xxx", "trackName" : "xxx"}
-            ]
         },
     ]
 }
@@ -145,7 +141,13 @@ if not in login status:
 
 ##### 1.6.0.1. Request
 
-POST '/add-album?target=album-id'
+POST '/add-album'
+
+```json
+{
+    "id" : "xxx"
+}
+```
 
 ##### 1.6.0.2. Response
 
@@ -159,7 +161,13 @@ if not in login status:
 
 ##### 1.7.0.1. Request
 
-POST '/remove-album?target=album-id'
+POST '/remove-album'
+
+```json
+{
+    "id": "xxx"
+}
+```
 
 ##### 1.7.0.2. Response
 
@@ -198,7 +206,14 @@ if not in login status:
 
 ##### 1.9.0.1. Request
 
-POST '/track-lastplay?target=track-id&time=current-time'
+POST '/track-lastplay'
+
+```json
+{
+    "id": "xxx",
+    "time": "xxx"
+}
+```
 
 time is expressed in unix timestamp
 
@@ -242,12 +257,13 @@ if not in login status:
 
 ##### 1.11.0.1 Request
 
-POST '/comment?target=album-id'
+POST '/comment'
 
-```http{.line-numbers}
-Content-Type: text
-
-comments
+```json{.line-numbers}
+{
+    "id": "xxx",
+    "comment": "xxxxxxxxx"
+}
 ```
 
 ##### 1.11.0.2 Response
@@ -322,7 +338,13 @@ if not in login status:
 
 ##### 2.10.0.1. Request
 
-POST 'admin/remove?target=album-id'
+POST 'admin/remove'
+
+```json
+{
+    "id": "xxx"
+}
+```
 
 ##### 2.10.0.2. Response
 
@@ -390,11 +412,11 @@ POST 'admin/reply'
     "reply" : [
         {
             "albumID" : "xxx",
-            "success" : "1/0"
+            "success" : "1/-1" // 1 represent success, -1 represent fail
         },
         {
             "albumID" : "xxx",
-            "success" : "1/0"
+            "success" : "1/-1"
         }
     ]
 }

@@ -6,6 +6,7 @@ urlpatterns = [
     path('', views.index, name="index"),
     path('register/', views.register, name="register"),
     path('login/', views.login, name="login"),
+    path('logout/', views.logout, name="logout")
 ]
 
 urlpatterns += [
@@ -40,6 +41,6 @@ urlpatterns += [
 ]
 
 urlpatterns += [
-    path('admin/check-upload', views.admin_check_upload, name="admin-check-upload"),
-    path('admin/reply', views.admin_reply, name = "admin-reply")
+    path('admin/check-upload/', views.admin_check_upload, name="admin-check-upload"),
+    path('admin/reply/', views.admin_reply, name = "admin-reply")
 ]

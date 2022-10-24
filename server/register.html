@@ -1,0 +1,329 @@
+<div>
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username">
+</div>
+
+<div>
+    <label for="pass">Password (8 characters minimum):</label>
+    <input type="password" id="password" name="password" required>
+</div>
+
+<div id = "register">
+    <button>register</button>
+    <div></div>
+</div>
+
+<div id = "login">
+    <button>login</button>
+    <div></div>
+</div>
+
+<div id = "logout">
+    <button>logout</button>
+    <div></div>
+</div>
+
+<div>
+    <label>search artist</label>
+    <input type = "text" id = "artist">
+</div>
+
+<div id = "search-artist">
+    <button>search artist</button>
+    <pre></pre>
+</div>
+
+<div>
+    <label>search album</label>
+    <input type = "text" id = "album">
+</div>
+
+<div id = "search-album">
+    <button>search album</button>
+    <pre></pre>
+</div>
+
+<div id = "play-track">
+    <div>
+        <label>input track id</label>
+        <input type = "text" id = "track">
+    </div>
+    <audio controls></audio>
+    <button>get track</button>
+    <pre></pre>
+</div>
+
+<div id = "upload">
+    <label>Upload albums</label>
+    <input type = "text" id = "album-name">
+    <input type = "text" id = "artist-name">
+    <div id = "track">
+        <input type = "text" id = "track-name">
+        <input type = "file" id = "track-file">
+    </div>
+    <button>upload</button>
+    <div id = "done"></div>
+</div>
+
+<div id = "add-to-collection">
+    <label>add album to personal collection</label>
+    <input type = "text">
+    <button>submit</button>
+</div>
+
+<div id = "comment">
+    <label>comment on an album</label>
+    <input type = "text" id = "album_commented">
+    <input type = "text" id = "comment">
+    <button>submit</button>
+</div>
+
+<div id = "admin-check-upload">
+    <label>check user upload</label>
+    <button>check</button>
+    <pre></pre>
+</div>
+
+<div id = "reply">
+    <label>reply user upload</label>
+    <input type = "text" id = "reply-id">
+    <input type = "text" id = "reply-success">
+    <button>reply</button>
+</div>
+
+<div id = "check-reply">
+    <label>user check admin reply</label>
+    <button>check reply</button>
+    <pre></pre>
+</div>
+
+<div id = "remove-fromDB">
+    <label>admin remove album from database</label>
+    <input type = "text">
+    <button>remove</button>
+</div>
+
+<script>
+
+    let button_register = document.querySelector('div#register button');
+    let button_login = document.querySelector('div#login button');
+    let button_logout = document.querySelector('div#logout button');
+    let button_upload = document.querySelector('div#upload button')
+    let button_search_artist = document.querySelector('div#search-artist button');
+    let button_search_album = document.querySelector('div#search-album button');
+    let button_play_track = document.querySelector('div#play-track button');
+    let button_add_collection = document.querySelector('div#add-to-collection button');
+    let button_comment = document.querySelector('div#comment button');
+    let button_check = document.querySelector('div#admin-check-upload button');
+    let button_reply = document.querySelector('div#reply button');
+    let button_check_reply = document.querySelector('div#check-reply button');
+    let button_remove = document.querySelector('div#remove-fromDB button')
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+        }
+
+    button_register.addEventListener('click', function(){
+        let username = document.querySelector('input#username').value;
+        let password = document.querySelector('input#password').value;
+        const register_info = {
+            "auth": {
+                "user-name": username,
+                "password": password
+            }
+        };
+        var req = new XMLHttpRequest();
+        req.addEventListener('load', function(){
+            document.querySelector('div#register div').innerHTML = "done";
+        })
+        req.open('POST', 'register/');
+        req.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        const csrftoken = getCookie('csrftoken');
+        req.setRequestHeader('X-CSRFToken', csrftoken);
+        req.send(JSON.stringify(register_info));
+    })
+
+    button_login.addEventListener('click', function(){
+        let username = document.querySelector('input#username').value;
+        let password = document.querySelector('input#password').value;
+        const login_info = {
+            "auth": {
+                "user-name": username,
+                "password": password
+            }
+        };
+        var req = new XMLHttpRequest();
+        req.addEventListener('load', function(){
+            document.querySelector('div#login div').innerHTML = "done";
+        })
+        req.open('POST', 'login/');
+        req.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        const csrftoken = getCookie('csrftoken');
+        req.setRequestHeader('X-CSRFToken', csrftoken);
+        req.send(JSON.stringify(login_info));
+    })
+
+    button_logout.addEventListener('click', function(){
+        var req = new XMLHttpRequest();
+        req.addEventListener('load', function(){
+            document.querySelector('div#logout div').innerHTML = "done";
+        })
+        req.open('POST', 'logout/');
+        const csrftoken = getCookie('csrftoken');
+        req.setRequestHeader('X-CSRFToken', csrftoken);
+        req.send();
+    })
+
+    
+
+    button_upload.addEventListener('click', function(){
+        album_name = document.querySelector('div#upload input#album-name').value
+        artist_name = document.querySelector('div#upload input#artist-name').value
+        track_name = document.querySelector('div#upload div#track input#track-name').value
+        track_file = document.querySelector('div#upload div#track input#track-file').files[0]
+        console.log(track_name)
+        console.log(track_file)
+        var formData = new FormData()
+        formData.append('name', album_name)
+        formData.append('artist', artist_name)
+        formData.append(track_name, track_file)
+        var req = new XMLHttpRequest()
+        req.addEventListener('load', function(){
+            document.querySelector('div#upload div#done').innerHTML = "done"
+        })
+        req.open('POST', 'upload/')
+        // req.setRequestHeader('Content-Type', 'multipart/form-data; boundary="--------"')
+        const csrftoken = getCookie('csrftoken');
+        req.setRequestHeader('X-CSRFToken', csrftoken);
+        req.send(formData)
+    })
+
+    button_search_artist.addEventListener('click', function(){
+        let artist_name = document.querySelector('input#artist').value;
+        var req = new XMLHttpRequest();
+        req.addEventListener('load', function(){
+            document.querySelector('div#search-artist pre').innerHTML = JSON.stringify(JSON.parse(req.responseText), null, 4);
+        })
+        req.open('GET', 'search-artist?target='+artist_name);
+        const csrftoken = getCookie('csrftoken');
+        req.setRequestHeader('X-CSRFToken', csrftoken);
+        req.send();
+    })
+
+    button_search_album.addEventListener('click', function(){
+        let album_name = document.querySelector('input#album').value;
+        var req = new XMLHttpRequest();
+        req.addEventListener('load', function(){
+            document.querySelector('div#search-album pre').innerHTML = JSON.stringify(JSON.parse(req.responseText), null, 4);
+        })
+        req.open('GET', 'search-album-id?target='+album_name);
+        const csrftoken = getCookie('csrftoken');
+        req.setRequestHeader('X-CSRFToken', csrftoken);
+        req.send();
+    })
+
+    button_play_track.addEventListener('click', function(){
+        let track_id = document.querySelector('input#track').value;
+        var req = new XMLHttpRequest();
+        req.addEventListener('load', function(){
+            response_content = JSON.parse(req.responseText);
+            document.querySelector('div#play-track pre').innerHTML = JSON.stringify(response_content, null, 4);
+            let player = document.querySelector('div#play-track audio');
+            player.src = response_content['url']
+        })
+        req.open('GET', 'play?target='+track_id);
+        const csrftoken = getCookie('csrftoken');
+        req.setRequestHeader('X-CSRFToken', csrftoken);
+        req.send()
+    })
+
+    button_add_collection.addEventListener('click', function(){
+        let album_id = document.querySelector('div#add-to-collection input').value;
+        const info = {
+            "id": album_id
+        }
+        var req = new XMLHttpRequest();
+        req.open('POST', 'add-album/');
+        req.setRequestHeader('Content-Type', 'application/json;charset=UTF-8')
+        const csrftoken = getCookie('csrftoken');
+        req.setRequestHeader('X-CSRFToken', csrftoken);
+        req.send(JSON.stringify(info));
+    })
+
+    button_comment.addEventListener('click', function(){
+        let album_id = document.querySelector('input#album_commented').value;
+        let comment = document.querySelector('input#comment').value;
+        const info = {
+            "id": album_id,
+            "comment": comment
+        };
+        var req = new XMLHttpRequest();
+        req.open('POST', 'comment/');
+        req.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        const csrftoken = getCookie('csrftoken');
+        req.setRequestHeader('X-CSRFToken', csrftoken);
+        req.send(JSON.stringify(info));
+    })
+
+    button_check.addEventListener('click', function(){
+        var req = new XMLHttpRequest();
+        req.addEventListener('load', function(){
+            document.querySelector('div#admin-check-upload pre').innerHTML = JSON.stringify(JSON.parse(req.responseText), null, 4);
+        })
+        req.open('GET', 'admin/check-upload/');
+        const csrftoken = getCookie('csrftoken');
+        req.setRequestHeader('X-CSRFToken', csrftoken);
+        req.send();
+    })
+
+    button_reply.addEventListener('click', function(){
+        let album_id = document.querySelector('div#reply input#reply-id').value
+        let success = document.querySelector('div#reply input#reply-success').value
+        const info = {
+            "reply": [
+                {"albumID": album_id, "success": success}
+            ]
+        }
+        var req = new XMLHttpRequest()
+        req.open('POST', 'admin/reply/')
+        req.setRequestHeader('Content-Type', 'application/json;charset=UTF-8')
+        const csrftoken = getCookie('csrftoken');
+        req.setRequestHeader('X-CSRFToken', csrftoken);
+        req.send(JSON.stringify(info))
+    })
+
+    button_check_reply.addEventListener('click', function(){
+        var req = new XMLHttpRequest();
+        req.addEventListener('load', function(){
+            document.querySelector('div#check-reply pre').innerHTML = JSON.stringify(JSON.parse(req.responseText), null, 4)
+        })
+        req.open('GET', 'check-upload-notification/')
+        const csrftoken = getCookie('csrftoken');
+        req.setRequestHeader('X-CSRFToken', csrftoken);
+        req.send()
+    })
+
+    button_remove.addEventListener('click', function(){
+        let album_id = document.querySelector('div#remove-fromDB input').value
+        const info = {
+            "id": album_id
+        }
+        var req = new XMLHttpRequest();
+        req.open('POST', 'admin/remove/')
+        const csrftoken = getCookie('csrftoken');
+        req.setRequestHeader('X-CSRFToken', csrftoken);
+        req.send(JSON.stringify(info))
+    })
+</script>

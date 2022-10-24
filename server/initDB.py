@@ -14,26 +14,26 @@ settings.configure(DATABASES = {
 with connection.cursor() as cursor:
     cursor.execute(
         """CREATE TABLE IF NOT EXISTS Artist(
-                artistID TEXT NOT NULL,
+                artistID INTEGER NOT NULL,
                 artistName TEXT NOT NULL,
                 PRIMARY KEY(artistID)
             );"""
     )
     cursor.execute(
         """CREATE TABLE IF NOT EXISTS User(
-                userID TEXT NOT NULL,
+                userID INTEGER NOT NULL,
                 userName TEXT NOT NULL,
                 PRIMARY KEY(userID)
             );"""
     )
     cursor.execute(
         """CREATE TABLE IF NOT EXISTS Album(
-                albumID TEXT NOT NULL,
+                albumID INTEGER NOT NULL,
                 albumName TEXT NOT NULL,
                 lastPlay INTEGER,
                 uploaderID TEXT,
                 granted INTEGER NOT NULL,
-                artistID TEXT NOT NULL,
+                artistID INTEGER NOT NULL,
                 PRIMARY KEY(albumID),
                 FOREIGN KEY(artistID) REFERENCES Artist(artistID) ON DELETE CASCADE
             );"""
@@ -45,25 +45,26 @@ with connection.cursor() as cursor:
                 trackLength REAL NOT NULL,
                 trackIndex INTEGER NOT NULL,
                 lastPlay INTEGER,
-                albumID TEXT NOT NULL,
+                albumID INTEGER NOT NULL,
                 PRIMARY KEY(trackID),
                 FOREIGN KEY(albumID) REFERENCES Album(albumID) ON DELETE CASCADE
             );"""
     )
     cursor.execute(
         """CREATE TABLE IF NOT EXISTS Comment(
-                userID TEXT NOT NULL,
-                albumID TEXT NOT NULL,
+                commentID INTEGER NOT NULL,
+                userID INTEGER NOT NULL,
+                albumID INTEGER NOT NULL,
                 content TEXT NOT NULL,
-                PRIMARY KEY(userID, albumID),
+                PRIMARY KEY(commentID),
                 FOREIGN KEY(userID) REFERENCES User(userID),
                 FOREIGN KEY(albumID) REFERENCES Album(albumID) ON DELETE CASCADE
             );"""
     )
     cursor.execute(
         """CREATE TABLE IF NOT EXISTS Collect(
-                userID TEXT NOT NULL,
-                albumID TEXT NOT NULL,
+                userID INTEGER NOT NULL,
+                albumID INTEGER NOT NULL,
                 PRIMARY KEY(userID, albumID),
                 FOREIGN KEY(userID) REFERENCES User(userID),
                 FOREIGN KEY(albumID) REFERENCES Album(albumID) ON DELETE CASCADE
