@@ -1,31 +1,47 @@
 <template>
-  <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
-  <img
-    alt="Vue logo"
-    src="./icons/logo.png"
-    style="width: 150px"
-    draggable="false"
-  />
-  <Transition name="slide-up" mode="out-in">
-    <LoginWindow v-if="currentWindow === 'LoginWindow'" @register="register"/>
-    <RegisterWindow v-else-if="currentWindow === 'RegisterWindow'" @cancel="cancel"/>
-  </Transition>
+    <Transition name="slide" mode="out-in">
+      <div id="not-logged-in" v-if="!ifLoggedIn">
+        <img
+          alt="Vue logo"
+          :src="require('@/icons/logo.png')"
+          style="width: 150px; height: 150px"
+          draggable="false"
+        />
+        <Transition name="slide-up" mode="out-in">
+          <LoginWindow
+            v-if="currentWindow === 'LoginWindow'"
+            @login="login"
+            @register="register"
+          />
+          <RegisterWindow
+            v-else-if="currentWindow === 'RegisterWindow'"
+            @cancel="cancel"
+          />
+        </Transition>
+      </div>
+      <div id="logged-in" v-else-if="ifLoggedIn">
+        <MainUI @log-out="handleLogout"/>
+        </div>
+    </Transition>
 </template>
 
 <script>
 import LoginWindow from "./components/Login.vue";
 import RegisterWindow from "./components/Register.vue";
+import MainUI from "./components/MainUI.vue";
 
 export default {
   name: "App",
   components: {
     LoginWindow,
     RegisterWindow,
+    MainUI,
   },
   data() {
     return {
       windowList: ["LoginWindow", "RegisterWindow"],
       currentWindow: "LoginWindow",
+      ifLoggedIn: false,
     };
   },
   methods: {
@@ -34,8 +50,14 @@ export default {
     },
     cancel() {
       this.currentWindow = "LoginWindow";
-    }
-  }
+    },
+    login() {
+      this.ifLoggedIn = true;
+    },
+    handleLogout() {
+      this.ifLoggedIn = false;
+    },
+  },
 };
 </script>
 
@@ -52,6 +74,7 @@ export default {
   background-repeat: no-repeat;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 html,
 body {
@@ -59,19 +82,31 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
-.slide-up-enter-active,
+.slide-up-enter-active {
+  animation: bounceIn;
+  animation-duration: 0.5s;
+}
+.slide-enter-active {
+  animation: fadeIn;
+  animation-duration: 0.5s;
+}
 .slide-up-leave-active {
-  transition: all 0.25s ease-out;
+  animation: backOutDown;
+  animation-duration: 0.2s;
 }
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(-30px);
+.slide-leave-active {
+  animation: backOutRight;
+  animation-duration: 0.5s;
 }
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-30px);
+#not-logged-in {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+#logged-in {
+  width: 100%;
+  height: 100%;
 }
 </style>

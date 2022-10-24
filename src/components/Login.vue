@@ -11,7 +11,7 @@
         autocomplete="off"
         tabindex="1"
         placeholder="Password"
-        type="text"
+        type="password"
         class="input"
       />
       <div id="button-area">

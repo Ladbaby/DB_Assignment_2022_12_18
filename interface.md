@@ -490,6 +490,7 @@ create table Collect
     foreign key(albumID) references Album(albumID) ON DELETE CASCADE
 );
 
+
 -- do not create new table for relation upload, merge this relation to table album
 -- create table Upload
 -- (
