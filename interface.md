@@ -81,21 +81,28 @@ if not in login status:
 
 ##### 1.4.0.1. Request 
 
-GET '/search-album-id?target=album-id'
+GET 'search-album-id?target=album-id'
+
+GET 'search-album-id/'
 
 ##### 1.4.0.2. Response
 
-```json{.line-numbers}
+```json
 {
-    "name" : "xxx",
-    "artist" : "xxx",
-    "tracks" : [
-        {"trackID" : "xxx", "trackName" : "xxx"},
-        {"trackID" : "xxx", "trackName" : "xxx"}
-    ],
-    "comments": [
-        {"userID": "xxx", "comment": "xxx"},
-        {"userID": "xxx", "comment": "xxx"}
+    "albums": [
+        {
+            "name" : "xxx",
+            "artist" : "xxx",
+            "tracks" : [
+                {"trackID" : "xxx", "trackName" : "xxx"},
+                {"trackID" : "xxx", "trackName" : "xxx"}
+            ],
+            "comments": [
+                {"userID": "xxx", "comment": "xxx"},
+                {"userID": "xxx", "comment": "xxx"}
+            ]
+        },
+        ......
     ]
 }
 ```

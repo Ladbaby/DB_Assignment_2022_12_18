@@ -124,33 +124,53 @@ def search_artist(request):
 @csrf_exempt
 def search_albumID(request):
     if request.user.is_authenticated:
-        album_id = request.GET.get('target')
-        with connection.cursor() as cursor:
-            sql = """SELECT albumName, artistName, trackID, trackName
-            FROM Artist INNER JOIN Album ON Artist.artistID = Album.artistID 
-            INNER JOIN Track ON Album.albumID = Track.albumID
-            Where Album.albumID = %s AND album.granted = 1"""
-            result = cursor.execute(sql, [album_id,]).fetchall()
+        albumID = []
+        if len(request.GET) == 0:
+            with connection.cursor() as cursor:
+                sql = """SELECT albumID from Album"""
+                result = cursor.execute(sql).fetchall()
+                for row in result:
+                    albumID.append(row[0])
+        else:
+            albumID.append(request.GET.get('target'))
+        
+        Albums = []
+
+        for album_id in albumID:
+
+            with connection.cursor() as cursor:
+                sql = """SELECT albumName, artistName, trackID, trackName
+                FROM Artist INNER JOIN Album ON Artist.artistID = Album.artistID 
+                INNER JOIN Track ON Album.albumID = Track.albumID
+                Where Album.albumID = %s AND album.granted = 1"""
+                result = cursor.execute(sql, [album_id,]).fetchall() 
+
+            with connection.cursor() as cursor:
+                sql = """SELECT userID, content
+                FROM Comment WHERE albumID = %s"""
+                comment_result = cursor.execute(sql, [album_id,]).fetchall()
+
             tracks = []
             for row in result:
                 trackinfo={}
                 trackinfo['trackID'] = row[2]
                 trackinfo['trackName'] = row[3]
                 tracks.append(trackinfo)
-        with connection.cursor() as cursor:
-            sql = """SELECT userID, content
-            FROM Comment WHERE albumID = %s"""
-            comment_result = cursor.execute(sql, [album_id,]).fetchall()
+
             comments = []
             for row in comment_result:
                 comment_info = {}
                 comment_info['userID']=row[0]
                 comment_info['comment']=row[1]
                 comments.append(comment_info)
-            response_content = {"name": result[0][0], "artist": result[0][1], "tracks": tracks, "comments": comments}
-            response = JsonResponse(response_content)
-            response.status_code = 200
-            return response
+
+            currentAlbum = {"name": result[0][0], "artist": result[0][1], "tracks": tracks, "comments": comments}
+            Albums.append(currentAlbum)
+    
+        response_content = {"albums": Albums}
+        response = JsonResponse(response_content)
+        response.status_code = 200
+        return response
     else:
         return HttpResponse(status=403)
 
