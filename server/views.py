@@ -16,6 +16,7 @@ from mutagen.mp3 import MP3
 
 # Create your views here.
 
+@csrf_exempt
 def index(request):
     current_path = os.path.dirname(__file__)
     parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
@@ -28,6 +29,7 @@ def index(request):
         response.write(content)
         return response
 
+@csrf_exempt
 def serve(request, folder, file_name):
     current_path = os.path.dirname(__file__)
     parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
@@ -52,13 +54,14 @@ def serve(request, folder, file_name):
             response.write(content)
             return response
     else:
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', encoding="utf-8") as file:
             content = file.read()
             response = HttpResponse()
             response['Content-Type'] = content_type
             response.write(content)
             return response
 
+@csrf_exempt
 def register(request):
     length = int(request.headers.get('Content-Length'))
     request_content = json.loads(request.read(length).decode('utf-8'))
@@ -75,6 +78,7 @@ def register(request):
         return HttpResponse(status = 200)
 
 
+@csrf_exempt
 def login(request):
     length = int(request.headers.get('Content-Length'))
     request_content = json.loads(request.read(length).decode('utf-8'))
@@ -88,11 +92,13 @@ def login(request):
         return HttpResponse(status = 403)
 
 
+@csrf_exempt
 def logout(request):
     Logout(request)
     return HttpResponse(status = 200)
 
 
+@csrf_exempt
 def search_artist(request):
     # if request.user.is_authenticated:
         artist_name = request.GET.get('target')
@@ -115,6 +121,7 @@ def search_artist(request):
         return HttpResponse(status = 403)
 
 
+@csrf_exempt
 def search_albumID(request):
     if request.user.is_authenticated:
         album_id = request.GET.get('target')
@@ -148,6 +155,7 @@ def search_albumID(request):
         return HttpResponse(status=403)
 
 
+@csrf_exempt
 def search_albumName(request):
     if request.user.is_authenticated:
         album_name = request.GET.get('target')
@@ -175,6 +183,7 @@ def search_albumName(request):
         return HttpResponse(status=403)
 
 
+@csrf_exempt
 def add_album_to_collection(request):
     if request.user.is_authenticated:
         length = int(request.headers.get('Content-Length'))
@@ -190,6 +199,7 @@ def add_album_to_collection(request):
         return HttpResponse(status = 403)
 
 
+@csrf_exempt
 def remove_album_from_collection(request):
     if request.user.is_authenticated:
         length = int(request.headers.get('Content-Length'))
@@ -204,6 +214,7 @@ def remove_album_from_collection(request):
         return HttpResponse(status = 403)
 
 
+@csrf_exempt
 def play_track(request):
     if request.user.is_authenticated:
         track_id = request.GET.get('target')
@@ -228,6 +239,7 @@ def play_track(request):
     else:
         return HttpResponse(status = 403)
 
+@csrf_exempt
 def send_music(request):
     if request.user.is_authenticated:
         song_name = request.GET.get('s')
@@ -243,6 +255,7 @@ def send_music(request):
         return HttpResponse(status = 403)
 
 
+@csrf_exempt
 def track_lastplay(request):
     if request.user.is_authenticated:
         length = int(request.headers.get('Content-Length'))
@@ -257,6 +270,7 @@ def track_lastplay(request):
     else:
         return HttpResponse(status = 403)
 
+@csrf_exempt
 def upload(request):
     if request.user.is_authenticated:
         upload_utility(request, False)
@@ -265,6 +279,7 @@ def upload(request):
         return HttpResponse(status = 403)
 
 
+@csrf_exempt
 def comment(request):
     if request.user.is_authenticated:
         user_id = request.user.id
@@ -288,6 +303,7 @@ def comment(request):
         return HttpResponse(status = 403)
 
 
+@csrf_exempt
 def check_upload(request):
     if request.user.is_authenticated:
         user_id = request.user.id
@@ -315,6 +331,7 @@ def check_upload(request):
     else:
         return HttpResponse(status = 403)
 
+@csrf_exempt
 def admin_upload(request):
     if request.user.is_authenticated:
         if request.user.is_staff:
@@ -326,6 +343,7 @@ def admin_upload(request):
         return HttpResponse(stauts = 403)
 
 
+@csrf_exempt
 def admin_remove(request):
     if request.user.is_authenticated:
         if request.user.is_staff:
@@ -342,6 +360,7 @@ def admin_remove(request):
         return HttpResponse(status = 403)
 
 
+@csrf_exempt
 def admin_check_upload(request):
     if request.user.is_authenticated:
         if request.user.is_staff:
@@ -377,6 +396,7 @@ def admin_check_upload(request):
         return HttpResponse(status = 403)
 
 
+@csrf_exempt
 def admin_reply(request):
     if request.user.is_authenticated:
         if request.user.is_staff:
@@ -395,6 +415,7 @@ def admin_reply(request):
     else:
         return HttpResponse(status = 403)
 
+@csrf_exempt
 def upload_utility(request, if_admin):
     grant = 0
     if if_admin:
