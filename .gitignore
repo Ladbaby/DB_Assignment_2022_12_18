@@ -5,6 +5,7 @@ node_modules
 .env
 /test
 /server/music
+*/__pycache__
 
 /src/icons/*
 /src/assets/*
