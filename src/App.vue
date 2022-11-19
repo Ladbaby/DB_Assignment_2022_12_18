@@ -16,6 +16,7 @@
           <RegisterWindow
             v-else-if="currentWindow === 'RegisterWindow'"
             @cancel="cancel"
+            @registerSuccess="registerSuccess"
           />
         </Transition>
       </div>
@@ -57,6 +58,9 @@ export default {
     handleLogout() {
       this.ifLoggedIn = false;
     },
+    registerSuccess() {
+      this.currentWindow = "LoginWindow";
+    }
   },
 };
 </script>
