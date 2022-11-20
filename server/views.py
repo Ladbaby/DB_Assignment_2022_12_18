@@ -202,6 +202,57 @@ def search_albumName(request):
     # else:
     #     return HttpResponse(status=403)
 
+@csrf_exempt
+def check_collection(request):
+    if request.user.is_authenticated:
+        user_id = request.user.id
+        albumID = []
+
+        with connection.cursor() as cursor:
+            sql = """SELECT albumID from Collect Where userID = %s"""
+            result = cursor.execute(sql, [user_id,]).fetchall()
+            for row in result:
+                albumID.append(row[0])
+        
+        Albums = []
+
+        for album_id in albumID:
+
+            with connection.cursor() as cursor:
+                sql = """SELECT albumName, artistName, trackID, trackName
+                FROM Artist INNER JOIN Album ON Artist.artistID = Album.artistID 
+                INNER JOIN Track ON Album.albumID = Track.albumID
+                Where Album.albumID = %s AND album.granted = 1"""
+                result = cursor.execute(sql, [album_id,]).fetchall() 
+
+            with connection.cursor() as cursor:
+                sql = """SELECT userID, content
+                FROM Comment WHERE albumID = %s"""
+                comment_result = cursor.execute(sql, [album_id,]).fetchall()
+
+            tracks = []
+            for row in result:
+                trackinfo={}
+                trackinfo['trackID'] = row[2]
+                trackinfo['trackName'] = row[3]
+                tracks.append(trackinfo)
+
+            comments = []
+            for row in comment_result:
+                comment_info = {}
+                comment_info['userID']=row[0]
+                comment_info['comment']=row[1]
+                comments.append(comment_info)
+
+            currentAlbum = {"name": result[0][0], "artist": result[0][1], "tracks": tracks, "comments": comments}
+            Albums.append(currentAlbum)
+    
+        response_content = {"albums": Albums}
+        response = JsonResponse(response_content)
+        response.status_code = 200
+        return response
+    else:
+        return HttpResponse(status = 403)
 
 @csrf_exempt
 def add_album_to_collection(request):

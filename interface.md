@@ -144,6 +144,40 @@ if not in login status:
 
 403 forbidden
 
+### User check person collection
+
+#### Request
+
+GET 'check-collection/'
+
+#### Response
+
+200 OK
+
+```json
+{
+    "albums": [
+        {
+            "name" : "xxx",
+            "artist" : "xxx",
+            "tracks" : [
+                {"trackID" : "xxx", "trackName" : "xxx"},
+                {"trackID" : "xxx", "trackName" : "xxx"}
+            ],
+            "comments": [
+                {"userID": "xxx", "comment": "xxx"},
+                {"userID": "xxx", "comment": "xxx"}
+            ]
+        },
+        ......
+    ]
+}
+```
+
+if not in login status:
+
+403 forbidden
+
 ### 1.6. users add album to personal collection
 
 ##### 1.6.0.1. Request
