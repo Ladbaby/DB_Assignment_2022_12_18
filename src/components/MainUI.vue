@@ -7,16 +7,12 @@
       @select="handleSelect"
       :ellipsis="false"
     >
-      <!-- <el-space spacer="|"> -->
       <el-menu-item index="1"
         ><el-avatar :size="55" :src="require('@/icons/logo.png')"
       /></el-menu-item>
       <el-menu-item index="2"
         ><el-icon size="55px"> <Setting /> </el-icon
       ></el-menu-item>
-      <!-- <el-menu-item index="3"
-          ><el-icon size="55px"> <Search /> </el-icon
-        ></el-menu-item> -->
       <el-menu-item index="3"
         ><el-icon size="55px"> <Plus /> </el-icon
       ></el-menu-item>
@@ -24,7 +20,6 @@
       <el-menu-item index="4">
         <el-icon size="55px" color="#FF0000"><SwitchButton /></el-icon>
       </el-menu-item>
-      <!-- </el-space> -->
     </el-menu>
     <transition name="el-zoom-in-center">
       <el-input
@@ -41,7 +36,6 @@
           </el-select>
         </template>
       </el-input>
-      <!-- <div v-else-if="!ifSearchShow" style="height:20px;"/> -->
     </transition>
   </div>
   <div id="body">
@@ -61,70 +55,70 @@
         </el-header>
         <el-main id="upload-main">
           <Transition name="slide-up" mode="out-in">
-          <el-upload
-            id="upload-demo"
-            drag
-            action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-            multiple
-            :auto-upload="false"
-            :on-change="handleChange"
-            v-model:file-list="fileList"
-            v-if="stepActive == 0"
-          >
-            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-            <div class="el-upload__text">
-              Drop file here or <em>click to upload</em>
-            </div>
-            <template #tip>
-              <div class="el-upload__tip">
-                jpg/png files with a size less than 500kb
+            <el-upload
+              id="upload-demo"
+              drag
+              action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+              multiple
+              :auto-upload="false"
+              :on-change="handleChange"
+              v-model:file-list="fileList"
+              v-if="stepActive == 0"
+            >
+              <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+              <div class="el-upload__text">
+                Drop file here or <em>click to upload</em>
               </div>
-            </template>
-          </el-upload>
-          <div v-else-if="stepActive == 1" id="upload-artist-div">
-            <el-row :gutter="20">
-              <el-col :span="24">
-                <center>
-                  <h2>Enter artist's name:</h2>
-                </center>
-              </el-col>
-            </el-row>
-            <el-row :gutter="20">
-              <el-col :span="24">
-                <center>
-                  <input
-                    autocomplete="off"
-                    tabindex="1"
-                    placeholder="artist's name"
-                    type="text"
-                    class="input"
-                  />
-                </center>
-              </el-col>
-            </el-row>
-          </div>
-          <div v-else-if="stepActive == 2" id="upload-album-div">
-            <el-row :gutter="20">
-              <el-col :span="24">
-                <center>
-                  <h2>Enter album's name:</h2>
-                </center>
-              </el-col>
-            </el-row>
-            <el-row :gutter="20">
-              <el-col :span="24">
-                <center>
-                  <input
-                    autocomplete="off"
-                    tabindex="1"
-                    placeholder="album's name"
-                    type="text"
-                    class="input"
-                  />
-                </center>
-              </el-col>
-            </el-row>
-          </div>
+              <template #tip>
+                <div class="el-upload__tip">
+                  jpg/png files with a size less than 500kb
+                </div>
+              </template>
+            </el-upload>
+            <div v-else-if="stepActive == 1" id="upload-artist-div">
+              <el-row :gutter="20">
+                <el-col :span="24">
+                  <center>
+                    <h2>Enter artist's name:</h2>
+                  </center>
+                </el-col>
+              </el-row>
+              <el-row :gutter="20">
+                <el-col :span="24">
+                  <center>
+                    <input
+                      autocomplete="off"
+                      tabindex="1"
+                      placeholder="artist's name"
+                      type="text"
+                      class="input"
+                    />
+                  </center>
+                </el-col>
+              </el-row>
+            </div>
+            <div v-else-if="stepActive == 2" id="upload-album-div">
+              <el-row :gutter="20">
+                <el-col :span="24">
+                  <center>
+                    <h2>Enter album's name:</h2>
+                  </center>
+                </el-col>
+              </el-row>
+              <el-row :gutter="20">
+                <el-col :span="24">
+                  <center>
+                    <input
+                      autocomplete="off"
+                      tabindex="1"
+                      placeholder="album's name"
+                      type="text"
+                      class="input"
+                    />
+                  </center>
+                </el-col>
+              </el-row>
+            </div>
           </Transition>
         </el-main>
         <el-footer>
@@ -151,26 +145,29 @@
         </el-footer>
       </el-container>
       <div id="music-list-div" v-else-if="currentTab == 'main'">
-        <!-- <el-scrollbar> -->
         <ul id="music-list-ul">
           <li class="music-card" v-for="item in musicList" :key="item">
-            <el-card :body-style="{ padding: '5px' }" :style="{
-          borderRadius: '10px'}" shadow="always" Round>
+            <el-card
+              :body-style="{ padding: '5px' }"
+              :style="{
+                borderRadius: '10px',
+              }"
+              shadow="always"
+              Round
+            >
               <img
                 src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
                 class="image"
               />
-              <div style="padding: 14px">
-                <span>Yummy hamburger</span>
+              <div style="padding: 14px;">
+                <span style="overflow-wrap: anywhere;">{{ item["name"] }}</span>
                 <div class="bottom">
-                  <time class="time">{{ currentDate }}</time>
-                  <el-button text class="button">Operating</el-button>
+                  <span><small>{{ item["artist"] }}</small></span>
                 </div>
               </div>
             </el-card>
           </li>
         </ul>
-        <!-- </el-scrollbar> -->
       </div>
       <el-container id="settings-div" v-else-if="currentTab == 'settings'">
         <el-aside width="200px" id="settings-aside">
@@ -267,10 +264,14 @@
 
 <script>
 import { ElMessage, ElMessageBox } from "element-plus";
-const axios = require("axios");
+import axios from "axios";
+import Cookies from "js-cookie";
 
 export default {
   name: "MainUI",
+  props: {
+    ifLoggedIn: Boolean,
+  },
   data() {
     return {
       currentTab: "main", // main, settings, upload
@@ -295,6 +296,17 @@ export default {
       searchCat: "",
       stepActive: 0,
     };
+  },
+  watch: {
+    ifLoggedIn: {
+      handler(newValue) {
+        console.log(newValue);
+        if (newValue == true) {
+          this.showAllAlbums();
+        }
+      },
+      immediate: true,
+    },
   },
   components: {
     // SvgIcon,
@@ -381,6 +393,31 @@ export default {
     },
     next() {
       this.stepActive < 2 ? this.stepActive++ : 2;
+    },
+    async showAllAlbums() {
+      var csrftoken = Cookies.get("csrftoken");
+      let showAllAlbumsResult = await axios
+        .get("http://127.0.0.1:8000/search-album-id/", {
+          headers: {
+            "Content-Type": "application/json;charset=UTF-8",
+            "X-CSRFToken": csrftoken,
+          },
+        })
+        .then(function (response) {
+          console.log(response);
+          return response;
+        })
+        .catch(function (error) {
+          console.log(error);
+          return error;
+        });
+      let statusCode = showAllAlbumsResult["status"];
+      if (statusCode == "200") {
+        this.musicList = showAllAlbumsResult["data"]["albums"];
+      }
+      else {
+        ElMessage.error("Fail to load the albums!");
+      }
     },
   },
 };
@@ -843,9 +880,10 @@ input.search-box-input:focus {
   background-color: hsla(0, 0%, 100%, 0.9) !important;
   overflow: hidden;
 }
-#upload-artist-div, #upload-album-div {
-  width:100%;
-  height:100%;
+#upload-artist-div,
+#upload-album-div {
+  width: 100%;
+  height: 100%;
 }
 input.input {
   border-radius: 20px;

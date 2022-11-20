@@ -21,7 +21,7 @@
         </Transition>
       </div>
       <div id="logged-in" v-else-if="ifLoggedIn">
-        <MainUI @log-out="handleLogout"/>
+        <MainUI @log-out="handleLogout" :ifLoggedIn="ifLoggedIn"/>
         </div>
     </Transition>
 </template>

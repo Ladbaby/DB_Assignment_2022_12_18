@@ -118,12 +118,12 @@ def search_artist(request):
             response.status_code = 200
             return response
     # else:
-        return HttpResponse(status = 403)
+        # return HttpResponse(status = 403)
 
 
 @csrf_exempt
 def search_albumID(request):
-    if request.user.is_authenticated:
+    # if request.user.is_authenticated:
         albumID = []
         if len(request.GET) == 0:
             with connection.cursor() as cursor:
@@ -171,13 +171,13 @@ def search_albumID(request):
         response = JsonResponse(response_content)
         response.status_code = 200
         return response
-    else:
-        return HttpResponse(status=403)
+    # else:
+        # return HttpResponse(status=403)
 
 
 @csrf_exempt
 def search_albumName(request):
-    if request.user.is_authenticated:
+    # if request.user.is_authenticated:
         album_name = request.GET.get('target')
         albums = []
         with connection.cursor() as cursor:
@@ -199,13 +199,13 @@ def search_albumName(request):
         response = JsonResponse({"albums": albums})
         response.status_code = 200
         return response
-    else:
-        return HttpResponse(status=403)
+    # else:
+    #     return HttpResponse(status=403)
 
 
 @csrf_exempt
 def add_album_to_collection(request):
-    if request.user.is_authenticated:
+    # if request.user.is_authenticated:
         length = int(request.headers.get('Content-Length'))
         request_content = json.loads(request.read(length).decode('utf-8'))
         album_id = request_content["id"]
@@ -215,13 +215,13 @@ def add_album_to_collection(request):
             print(user_id, album_id)
             cursor.execute(sql, [user_id, album_id])
         return HttpResponse(status = 200)
-    else:
-        return HttpResponse(status = 403)
+    # else:
+    #     return HttpResponse(status = 403)
 
 
 @csrf_exempt
 def remove_album_from_collection(request):
-    if request.user.is_authenticated:
+    # if request.user.is_authenticated:
         length = int(request.headers.get('Content-Length'))
         request_content = json.loads(request.read(length).decode('utf-8'))
         album_id = request_content["id"]
@@ -230,13 +230,13 @@ def remove_album_from_collection(request):
             sql = """DELETE FROM Collect Where userID = %s AND albumID = %s"""
             cursor.execute(sql, [user_id, album_id])
         return HttpResponse(status = 200)
-    else:
-        return HttpResponse(status = 403)
+    # else:
+    #     return HttpResponse(status = 403)
 
 
 @csrf_exempt
 def play_track(request):
-    if request.user.is_authenticated:
+    # if request.user.is_authenticated:
         track_id = request.GET.get('target')
         with connection.cursor() as cursor:
             sql = """SELECT trackName, trackLength, lastPlay, trackID
@@ -256,12 +256,12 @@ def play_track(request):
             response = JsonResponse(response_content)
             response.status_code = 200
             return response
-    else:
-        return HttpResponse(status = 403)
+    # else:
+    #     return HttpResponse(status = 403)
 
 @csrf_exempt
 def send_music(request):
-    if request.user.is_authenticated:
+    # if request.user.is_authenticated:
         song_name = request.GET.get('s')
         current_path = os.path.dirname(__file__)
         file_path = os.path.join(current_path, 'music/'+song_name+'.mp3')
@@ -271,13 +271,13 @@ def send_music(request):
             response['Content-Length']=os.path.getsize(file_path)
             response.write(song_file.read())
             return response
-    else:
-        return HttpResponse(status = 403)
+    # else:
+    #     return HttpResponse(status = 403)
 
 
 @csrf_exempt
 def track_lastplay(request):
-    if request.user.is_authenticated:
+    # if request.user.is_authenticated:
         length = int(request.headers.get('Content-Length'))
         request_content = json.loads(request.read(length).decode('utf-8'))
         track_id = request_content["id"]
@@ -287,21 +287,21 @@ def track_lastplay(request):
             WHERE trackID = %s"""
             cursor.execute(sql, [time, track_id])
         return HttpResponse(status = 200)
-    else:
-        return HttpResponse(status = 403)
+    # else:
+    #     return HttpResponse(status = 403)
 
 @csrf_exempt
 def upload(request):
-    if request.user.is_authenticated:
+    # if request.user.is_authenticated:
         upload_utility(request, False)
         return HttpResponse(status = 200)
-    else:
-        return HttpResponse(status = 403)
+    # else:
+    #     return HttpResponse(status = 403)
 
 
 @csrf_exempt
 def comment(request):
-    if request.user.is_authenticated:
+    # if request.user.is_authenticated:
         user_id = request.user.id
         length = int(request.headers.get('Content-Length'))
         resposne_content = json.loads(request.read(length).decode('utf-8'))
@@ -319,13 +319,13 @@ def comment(request):
             VALUES (%s, %s, %s, %s)"""
             cursor.execute(sql, [comment_id, user_id, album_id, comment_content])
         return HttpResponse(status = 200)
-    else:
-        return HttpResponse(status = 403)
+    # else:
+    #     return HttpResponse(status = 403)
 
 
 @csrf_exempt
 def check_upload(request):
-    if request.user.is_authenticated:
+    # if request.user.is_authenticated:
         user_id = request.user.id
         with connection.cursor() as cursor:
             sql = """SELECT albumName, granted FROM Album
@@ -348,24 +348,24 @@ def check_upload(request):
             response = JsonResponse(response_content)
             response.status_code = 200
             return response
-    else:
-        return HttpResponse(status = 403)
+    # else:
+    #     return HttpResponse(status = 403)
 
 @csrf_exempt
 def admin_upload(request):
-    if request.user.is_authenticated:
+    # if request.user.is_authenticated:
         if request.user.is_staff:
             upload_utility(request, True)
             return HttpResponse(status = 200)
         else:
             return HttpResponse(status = 403)
-    else:
-        return HttpResponse(stauts = 403)
+    # else:
+    #     return HttpResponse(stauts = 403)
 
 
 @csrf_exempt
 def admin_remove(request):
-    if request.user.is_authenticated:
+    # if request.user.is_authenticated:
         if request.user.is_staff:
             length = int(request.headers.get('Content-Length'))
             request_content = json.loads(request.read(length).decode('utf-8'))
@@ -376,13 +376,13 @@ def admin_remove(request):
             return HttpResponse(status = 200)
         else:
             return HttpResponse(status = 403)
-    else:
-        return HttpResponse(status = 403)
+    # else:
+    #     return HttpResponse(status = 403)
 
 
 @csrf_exempt
 def admin_check_upload(request):
-    if request.user.is_authenticated:
+    # if request.user.is_authenticated:
         if request.user.is_staff:
             upload_list = []
             with connection.cursor() as cursor:
@@ -412,13 +412,13 @@ def admin_check_upload(request):
             return response
         else:
             return HttpResponse(status = 403)
-    else:
-        return HttpResponse(status = 403)
+    # else:
+    #     return HttpResponse(status = 403)
 
 
 @csrf_exempt
 def admin_reply(request):
-    if request.user.is_authenticated:
+    # if request.user.is_authenticated:
         if request.user.is_staff:
             length = int(request.headers.get('Content-Length'))
             request_content = json.loads(request.read(length).decode('utf-8'))
@@ -432,8 +432,8 @@ def admin_reply(request):
             return HttpResponse(status = 200)
         else:
             return HttpResponse(status = 403)
-    else:
-        return HttpResponse(status = 403)
+    # else:
+    #     return HttpResponse(status = 403)
 
 @csrf_exempt
 def upload_utility(request, if_admin):
