@@ -14,17 +14,14 @@ import json
 import hashlib
 from mutagen.mp3 import MP3
 
-BASE_DIR = os.path.dirname(__file__)
+BASE_DIR = os.path.join(os.path.dirname(__file__), os.pardir)
 
 # Create your views here.
 
 @csrf_exempt
 def index(request):
-    current_path = os.path.dirname(__file__)
-    parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
-    dist_path = os.path.join(parent_path, 'dist')
     file_name = 'index.html'
-    file_path = os.path.join(dist_path, file_name)
+    file_path = os.path.join(os.path.join(BASE_DIR, "dist"), file_name)
     with open(file_path, 'r') as file:
         content = file.read()
         response = HttpResponse()
@@ -67,10 +64,13 @@ def serve(request, folder, file_name):
 def register(request):
     length = int(request.headers.get('Content-Length'))
     request_content = json.loads(request.read(length).decode('utf-8'))
-    user_name = request_content["auth"]["user-name"]
-    pass_word = request_content["auth"]["password"]
-    if User.objects.filter(username=user_name).exists():
+    try:
+        user_name = request_content["auth"]["user-name"]
+        pass_word = request_content["auth"]["password"]
+    except (KeyError):
         return HttpResponse(status = 400)
+    if User.objects.filter(username=user_name).exists():
+        return HttpResponse(content = "user name already exists", status = 400)
     else:
         user = User.objects.create_user(username=user_name, password=pass_word)
         user.save()
@@ -84,8 +84,11 @@ def register(request):
 def login(request):
     length = int(request.headers.get('Content-Length'))
     request_content = json.loads(request.read(length).decode('utf-8'))
-    username = request_content["auth"]["user-name"]
-    password = request_content["auth"]["password"]
+    try:
+        username = request_content["auth"]["user-name"]
+        password = request_content["auth"]["password"]
+    except KeyError:
+        return HttpResponse(status = 400)
     user = authenticate(username = username, password = password)
     if user is not None:
         Login(request, user)
@@ -93,9 +96,7 @@ def login(request):
             response_content = {"isAdmin": True}
         else:
             response_content = {"isAdmin": False}
-        response = JsonResponse(response_content)
-        response.status_code = 200
-        return response
+        return JsonResponse(response_content, status = 200)
     else:
         return HttpResponse(status = 403)
 
@@ -110,21 +111,26 @@ def logout(request):
 def search_artist(request):
     # if request.user.is_authenticated:
         artist_name = request.GET.get('target')
-        with connection.cursor() as cursor:
-            sql = """SELECT albumID
-            FROM Artist INNER JOIN Album ON Artist.artistID = Album.artistID 
-            WHERE artistName = %s AND album.granted = 1"""
-            result = cursor.execute(sql, [artist_name,]).fetchall()
-            albumID = []
-            for row in result:
-                albumID.append(row[0])
-        
-        Albums = check_album_utility(albumID)
-    
-        response_content = {"albums": Albums}
-        response = JsonResponse(response_content)
-        response.status_code = 200
-        return response
+        if artist_name is not None:
+            with connection.cursor() as cursor:
+                sql = """SELECT albumID
+                FROM Artist INNER JOIN Album ON Artist.artistID = Album.artistID 
+                WHERE artistName = %s AND album.granted = 1"""
+                result = cursor.execute(sql, [artist_name,]).fetchall()
+
+                if not result:
+                    return JsonResponse({"albums": []}, status = 200)
+
+                albumID = []
+                for row in result:
+                    albumID.append(row[0])
+
+            Albums = check_album_utility(albumID)
+
+            return JsonResponse({"albums": Albums}, status = 200)
+        else:
+            return HttpResponse(status = 400)
+
     # else:
         # return HttpResponse(status = 403)
 
@@ -132,22 +138,24 @@ def search_artist(request):
 @csrf_exempt
 def search_albumID(request):
     # if request.user.is_authenticated:
+        album_id = request.GET.get('target')
         albumID = []
-        if len(request.GET) == 0:
+        if album_id is not None:
+            albumID.append(album_id)
+        else:
             with connection.cursor() as cursor:
                 sql = """SELECT albumID from Album Where Album.granted = 1"""
                 result = cursor.execute(sql).fetchall()
+
+                if not result:
+                    return JsonResponse({"albums": []}, status = 200)
+
                 for row in result:
                     albumID.append(row[0])
-        else:
-            albumID.append(request.GET.get('target'))
         
         Albums = check_album_utility(albumID)
     
-        response_content = {"albums": Albums}
-        response = JsonResponse(response_content)
-        response.status_code = 200
-        return response
+        return JsonResponse({"albums": Albums}, status = 200)
     # else:
         # return HttpResponse(status=403)
 
@@ -156,17 +164,23 @@ def search_albumID(request):
 def search_albumName(request):
     # if request.user.is_authenticated:
         album_name = request.GET.get('target')
-        albumID = []
-        with connection.cursor() as cursor:
-            sql = """SELECT albumID FROM Album WHERE albumName = %s AND album.granted = 1"""
-            result = cursor.execute(sql, [album_name,]).fetchall()
-            for row in result:
-                albumID.append(row[0])
-        
-        Albums = check_album_utility(albumID)
-        response = JsonResponse({"albums": Albums})
-        response.status_code = 200
-        return response
+        if album_name is not None:
+            albumID = []
+            with connection.cursor() as cursor:
+                sql = """SELECT albumID FROM Album WHERE albumName = %s AND album.granted = 1"""
+                result = cursor.execute(sql, [album_name,]).fetchall()
+
+                if not result:
+                    return JsonResponse({"albums": []}, status = 200)
+
+                for row in result:
+                    albumID.append(row[0])
+
+            Albums = check_album_utility(albumID)
+
+            return JsonResponse({"albums": Albums}, status = 200)
+        else:
+            return HttpResponse(status = 400)
     # else:
     #     return HttpResponse(status=403)
 
@@ -174,20 +188,21 @@ def search_albumName(request):
 def check_collection(request):
     if request.user.is_authenticated:
         user_id = request.user.id
-        albumID = []
 
+        albumID = []
         with connection.cursor() as cursor:
             sql = """SELECT albumID from Collect Where userID = %s"""
             result = cursor.execute(sql, [user_id,]).fetchall()
+
+            if not result:
+                return JsonResponse({"albums": []}, status = 200)
+
             for row in result:
                 albumID.append(row[0])
         
         Albums = check_album_utility(albumID)
     
-        response_content = {"albums": Albums}
-        response = JsonResponse(response_content)
-        response.status_code = 200
-        return response
+        return JsonResponse({"albums": Albums}, status = 200)
     else:
         return HttpResponse(status = 403)
 
@@ -196,12 +211,17 @@ def add_album_to_collection(request):
     # if request.user.is_authenticated:
         length = int(request.headers.get('Content-Length'))
         request_content = json.loads(request.read(length).decode('utf-8'))
-        album_id = request_content["id"]
+        try:
+            album_id = request_content["id"]
+        except KeyError:
+            return HttpResponse(status = 400)
         user_id = request.user.id
         with connection.cursor() as cursor:
             sql = """INSERT INTO Collect (userID, albumID) VALUES (%s, %s)"""
-            print(user_id, album_id)
-            cursor.execute(sql, [user_id, album_id])
+            try:
+                cursor.execute(sql, [user_id, album_id])
+            except sqlite3.Error as er:
+                return HttpResponse(content = "album not exist", status = 400)
         return HttpResponse(status = 200)
     # else:
     #     return HttpResponse(status = 403)
@@ -212,11 +232,17 @@ def remove_album_from_collection(request):
     # if request.user.is_authenticated:
         length = int(request.headers.get('Content-Length'))
         request_content = json.loads(request.read(length).decode('utf-8'))
-        album_id = request_content["id"]
+        try:
+            album_id = request_content["id"]
+        except KeyError:
+            return HttpResponse(status = 400)
         user_id = request.user.id
         with connection.cursor() as cursor:
             sql = """DELETE FROM Collect Where userID = %s AND albumID = %s"""
-            cursor.execute(sql, [user_id, album_id])
+            try:
+                cursor.execute(sql, [user_id, album_id])
+            except sqlite3.Error as er:
+                return HttpResponse(content = "album not exist", status = 400)
         return HttpResponse(status = 200)
     # else:
     #     return HttpResponse(status = 403)
@@ -226,24 +252,29 @@ def remove_album_from_collection(request):
 def play_track(request):
     # if request.user.is_authenticated:
         track_id = request.GET.get('target')
-        with connection.cursor() as cursor:
-            sql = """SELECT trackName, trackLength, lastPlay, trackID
-            FROM Track WHERE Track.trackID = %s"""
-            result = cursor.execute(sql, [track_id,]).fetchone()
-            track_url = "/music?s="+result[3]
-            if result[2] is None:
-                lastplay = -1
-            else:
-                lastplay = result[2]
-            response_content = {
-                "name": result[0],
-                "length": result[1], 
-                "lastPlay": lastplay,
-                "url": track_url
-            }
-            response = JsonResponse(response_content)
-            response.status_code = 200
-            return response
+        if track_id is not None:
+            with connection.cursor() as cursor:
+                sql = """SELECT trackName, trackLength, lastPlay, trackID
+                FROM Track WHERE Track.trackID = %s"""
+                result = cursor.execute(sql, [track_id,]).fetchone()
+
+                if result is None:
+                    return HttpResponse(content = "track not exist", status = 400)
+
+                track_url = "/music?s="+result[3]
+                if result[2] is None:
+                    lastplay = -1
+                else:
+                    lastplay = result[2]
+                response_content = {
+                    "name": result[0],
+                    "length": result[1], 
+                    "lastPlay": lastplay,
+                    "url": track_url
+                }
+                return JsonResponse(response_content, status = 200)
+        else:
+            return HttpResponse(status = 400)
     # else:
     #     return HttpResponse(status = 403)
 
@@ -251,15 +282,18 @@ def play_track(request):
 def send_music(request):
     # if request.user.is_authenticated:
         song_name = request.GET.get('s')
-        song_name += '.mp3'
-        current_path = os.path.dirname(__file__)
-        song_path = os.path.join(os.path.join(current_path, "music"), song_name)
-        with open(song_path, "rb") as song_file:
-            response = HttpResponse()
-            response['Content-Type']='audio/mp3'
-            response['Content-Length']=os.path.getsize(song_path)
-            response.write(song_file.read())
-            return response
+        if song_name is not None:
+            song_name += '.mp3'
+            current_path = os.path.dirname(__file__)
+            song_path = os.path.join(os.path.join(current_path, "music"), song_name)
+            with open(song_path, "rb") as song_file:
+                response = HttpResponse()
+                response['Content-Type']='audio/mp3'
+                response['Content-Length']=os.path.getsize(song_path)
+                response.write(song_file.read())
+                return response
+        else:
+            return HttpResponse(status = 400)
     # else:
     #     return HttpResponse(status = 403)
 
@@ -269,12 +303,20 @@ def track_lastplay(request):
     # if request.user.is_authenticated:
         length = int(request.headers.get('Content-Length'))
         request_content = json.loads(request.read(length).decode('utf-8'))
-        track_id = request_content["id"]
-        time = request_content["time"]
+        try:
+            track_id = request_content["id"]
+            time = request_content["time"]
+        except KeyError:
+            return HttpResponse(status = 400)
+
         with connection.cursor() as cursor:
             sql = """UPDATE Track SET lastPlay = %s
             WHERE trackID = %s"""
-            cursor.execute(sql, [time, track_id])
+            try:
+                cursor.execute(sql, [time, track_id])
+            except sqlite3.Error as er:
+                return HttpResponse(content = "track not exist", status = 400)
+
         return HttpResponse(status = 200)
     # else:
     #     return HttpResponse(status = 403)
@@ -282,8 +324,7 @@ def track_lastplay(request):
 @csrf_exempt
 def upload(request):
     # if request.user.is_authenticated:
-        upload_utility(request, False)
-        return HttpResponse(status = 200)
+        return upload_utility(request, False)
     # else:
     #     return HttpResponse(status = 403)
 
@@ -294,19 +335,29 @@ def comment(request):
         user_id = request.user.id
         length = int(request.headers.get('Content-Length'))
         resposne_content = json.loads(request.read(length).decode('utf-8'))
-        album_id = resposne_content["id"]
-        comment_content = resposne_content["comment"]
+
+        try:
+            album_id = resposne_content["id"]
+            comment_content = resposne_content["comment"]
+        except KeyError:
+            return HttpResponse(status = 400)
+
         with connection.cursor() as cursor:
             sql = """SELECT MAX(commentID) FROM Comment"""
-            current_id = cursor.execute(sql).fetchone()[0]
+            current_id = cursor.execute(sql).fetchone()
             if current_id is None:
                 comment_id = 1
             else:
-                comment_id = current_id + 1
+                comment_id = current_id[0] + 1
+
         with connection.cursor() as cursor:
             sql = """INSERT INTO Comment(commentID, userID, albumID, content)
             VALUES (%s, %s, %s, %s)"""
-            cursor.execute(sql, [comment_id, user_id, album_id, comment_content])
+            try:
+                cursor.execute(sql, [comment_id, user_id, album_id, comment_content])
+            except:
+                print("insert into comment fail")
+                return HttpResponse(status = 400)
         return HttpResponse(status = 200)
     # else:
     #     return HttpResponse(status = 403)
@@ -320,6 +371,10 @@ def check_upload(request):
             sql = """SELECT albumName, granted FROM Album
             WHERE uploaderID = %s"""
             result = cursor.execute(sql, [user_id,]).fetchall()
+
+            if not result:
+                return JsonResponse({"notification": []}, status = 200)
+
             notification = []
             for row in result:
                 check_content = {}
@@ -333,10 +388,8 @@ def check_upload(request):
                 else:
                     pass
                 notification.append(check_content)
-            response_content = {"notification": notification}
-            response = JsonResponse(response_content)
-            response.status_code = 200
-            return response
+            
+            return JsonResponse({"notification": notification}, status = 200)
     # else:
     #     return HttpResponse(status = 403)
 
@@ -344,8 +397,7 @@ def check_upload(request):
 def admin_upload(request):
     # if request.user.is_authenticated:
         if request.user.is_staff:
-            upload_utility(request, True)
-            return HttpResponse(status = 200)
+            return upload_utility(request, True)
         else:
             return HttpResponse(status = 403)
     # else:
@@ -358,10 +410,20 @@ def admin_remove(request):
         if request.user.is_staff:
             length = int(request.headers.get('Content-Length'))
             request_content = json.loads(request.read(length).decode('utf-8'))
-            album_ID = request_content["id"]
+            try:
+                album_ID = request_content["id"]
+            except KeyError:
+                return HttpResponse(status = 400)
+
             with connection.cursor() as cursor:
                 sql = """DELETE FROM Album WHERE albumID=%s"""
-                cursor.execute(sql, [album_ID,])
+
+                try:
+                    cursor.execute(sql, [album_ID,])
+                except sqlite3.Error as er:
+                    print("admin remove album fail")
+                    return HttpResponse(status = 400)
+
             return HttpResponse(status = 200)
         else:
             return HttpResponse(status = 403)
@@ -377,16 +439,30 @@ def admin_check_upload(request):
             with connection.cursor() as cursor:
                 sql = """SELECT albumID FROM Album WHERE granted = 0"""
                 uploads = cursor.execute(sql).fetchall()
+
+                if not uploads:
+                    return JsonResponse({"upload": []}, status = 200)
+
                 for upload in uploads:
                     album_id = upload[0]
+
                     upload_info = {}
-                    with connection.cursor() as cursor1:
-                        sql = """SELECT userID, userName, albumName, artistName, trackID, trackName
+                    with connection.cursor() as cursor_select_album:
+                        sql_select_album = """SELECT userID, userName, albumName, artistName, trackID, trackName
                         FROM User INNER JOIN Album ON User.userID = Album.uploaderID
                         INNER JOIN Artist ON Album.artistID = Artist.artistID
                         INNER JOIN Track ON Album.albumID = Track.albumID
                         WHERE Album.albumID = %s"""
-                        tracks = cursor1.execute(sql, [album_id,]).fetchall()
+
+                        try:
+                            tracks = cursor_select_album.execute(sql_select_album, [album_id,]).fetchall()
+                        except sqlite3.Error as er:
+                            print("admin check upload error")
+                            return HttpResponse(status = 400)
+
+                        if not tracks:
+                            return JsonResponse({"upload": []}, status = 200)
+
                         track_list = []
                         for track in tracks:
                             track_ID = track[4]
@@ -396,9 +472,7 @@ def admin_check_upload(request):
                         upload_info['userName'] = tracks[0][1]
                         upload_info['album'] = {'id': album_id, 'name': tracks[0][2], 'artsit': tracks[0][3], 'tracks': track_list}
                     upload_list.append(upload_info)
-            response = JsonResponse({"upload": upload_list})
-            response.status_code = 200
-            return response
+            return JsonResponse({"upload": upload_list}, status = 200)
         else:
             return HttpResponse(status = 403)
     # else:
@@ -411,13 +485,28 @@ def admin_reply(request):
         if request.user.is_staff:
             length = int(request.headers.get('Content-Length'))
             request_content = json.loads(request.read(length).decode('utf-8'))
-            replies = request_content['reply']
+
+            try:
+                replies = request_content['reply']
+            except KeyError:
+                return HttpResponse(status = 400)
+
             for reply in replies:
-                album_ID = reply['albumID']
-                success = reply['success']
+
+                try:
+                    album_ID = reply['albumID']
+                    success = reply['success']
+                except KeyError:
+                    return HttpResponse(status = 400)
+
                 with connection.cursor() as cursor:
                     sql = """UPDATE Album SET granted = %s WHERE albumID = %s"""
-                    cursor.execute(sql, [success, album_ID])
+                    try:
+                        cursor.execute(sql, [success, album_ID])
+                    except sqlite3.Error as er:
+                        print("update admin reply fail")
+                        return HttpResponse(status = 400)
+
             return HttpResponse(status = 200)
         else:
             return HttpResponse(status = 403)
@@ -438,8 +527,9 @@ def check_album_utility(album_id_list):
             result = cursor.execute(sql, [album_id,]).fetchall() 
 
         with connection.cursor() as cursor:
-            sql = """SELECT userID, content
-            FROM Comment WHERE albumID = %s"""
+            sql = """SELECT Comment.userID, userName, content
+            FROM Comment INNER JOIN User ON User.userID = Comment.userID
+            WHERE Comment.albumID = %s"""
             comment_result = cursor.execute(sql, [album_id,]).fetchall()
 
         tracks = []
@@ -453,7 +543,8 @@ def check_album_utility(album_id_list):
         for row in comment_result:
             comment_info = {}
             comment_info['userID']=row[0]
-            comment_info['comment']=row[1]
+            comment_info['userName']=row[1]
+            comment_info['comment']=row[2]
             comments.append(comment_info)
 
         currentAlbum = {"id": result[0][0],"name": result[0][1], "artist": result[0][2], "tracks": tracks, "comments": comments}
@@ -463,58 +554,79 @@ def check_album_utility(album_id_list):
 
 @csrf_exempt
 def upload_utility(request, if_admin):
+
     grant = 0
     if if_admin:
         grant = 1
 
     album_name = request.POST.get('name')
     artist_name = request.POST.get('artist')
+
+    if album_name is None or artist_name is None:
+        return HttpResponse(status = 400)
+
     artist_ID = ""
-    new_artist = False
 
     # insert into table artist
     with connection.cursor() as cursor:
-        sql_check_existence = """SELECT COUNT(*)
+        sql_check_existence = """SELECT Artist.artistID
         From Artist INNER JOIN Album on Artist.artistID = Album.artistID
         WHERE Artist.artistName = %s AND (Album.granted = 1 OR Album.granted = 0)"""
-        result = cursor.execute(sql_check_existence, [artist_name,]).fetchone()[0]
-        if result == 0:
-            with connection.cursor() as cursor1:
-                max_artistID = cursor1.execute("SELECT MAX(artistID) FROM Artist").fetchone()[0]
+        result = cursor.execute(sql_check_existence, [artist_name,]).fetchall()
+
+        if not result:
+
+            with connection.cursor() as cursor_get_id:
+                max_artistID = cursor_get_id.execute("SELECT MAX(artistID) FROM Artist").fetchone()
                 if max_artistID is None:
                     artist_ID = 1
                 else:
-                    artist_ID = int(max_artistID) + 1
-            sql_insert_artist = """INSERT INTO Artist(artistID, artistName) VALUES (%s, %s)"""
-            with connection.cursor() as cursor1:
-                cursor1.execute(sql_insert_artist, [artist_ID, artist_name])
+                    artist_ID = int(max_artistID[0]) + 1
+
+            with connection.cursor() as cursor_insert_artist:
+                try:
+                    sql_insert_artist = """INSERT INTO Artist(artistID, artistName) VALUES (%s, %s)"""
+                except sqlite3.Error as er:
+                    print("upload album, insert into artist fail")
+                    return HttpResponse(status = 400)
+
+                cursor_insert_artist.execute(sql_insert_artist, [artist_ID, artist_name])
+
         else:
-            sql_getID = """SELECT artistID FROM Artist WHERE artistName = %s"""
-            with connection.cursor() as cursor2:
-                artist_ID = cursor.execute(sql_getID, [artist_name,]).fetchone()[0]
+            artist_ID = result[0][0]
+
     user_ID = str(request.user.id)
 
     # insert into table album
     with connection.cursor() as cursor:
-        max_albumID = cursor.execute("SELECT MAX(albumID) FROM Album").fetchone()[0]
+        max_albumID = cursor.execute("SELECT MAX(albumID) FROM Album").fetchone()
         if max_albumID is None:
             album_ID = 1
         else:
-            album_ID = int(max_albumID) + 1
+            album_ID = int(max_albumID[0]) + 1
 
     with connection.cursor() as cursor:
         sql = """INSERT INTO Album(albumID, albumName, uploaderID, granted, artistID)
         VALUES (%s, %s, %s, %s, %s)"""
-        cursor.execute(sql, [album_ID, album_name, user_ID, grant, artist_ID])
+        try:
+            cursor.execute(sql, [album_ID, album_name, user_ID, grant, artist_ID])
+        except sqlite3.Error as er:
+            print("upload album, insert into album fail")
+            return HttpResponse(status = 400)
 
     track_index = 1
     current_path = os.path.dirname(__file__)
+
     for track in request.FILES.lists():
-        track_name = track[0]
-        # print(track_name)
-        track_files = track[1]
+
+        try:
+            track_name = track[0]
+            track_files = track[1]
+        except KeyError:
+            return HttpResponse(stauts = 400)
+
         for track_file in track_files:
-            # print(track_file)
+
             file_content = track_file.read()
             md5 = hashlib.md5()
             md5.update(file_content)
@@ -522,12 +634,18 @@ def upload_utility(request, if_admin):
             new_file_path = os.path.join(os.path.join(current_path, "music"), track_ID+".mp3")
             with open(new_file_path, 'wb') as newfile:
                 newfile.write(file_content)
+
             audio = MP3(track_file)
             track_length = audio.info.length
             # insert into table track
             with connection.cursor() as cursor:
                 sql = """INSERT INTO Track(trackID, trackName, trackLength, trackIndex, albumID)
                 VALUES (%s, %s, %s, %s, %s)"""
-                cursor.execute(sql, [track_ID, track_name, track_length, track_index, album_ID])
-            
+                try:
+                    cursor.execute(sql, [track_ID, track_name, track_length, track_index, album_ID])
+                except sqlite3.Error as er:
+                    print("upload album, insert track fail")
+                    return HttpResponse(status = 400)
             track_index+=1
+    
+    return HttpResponse(status = 200)
