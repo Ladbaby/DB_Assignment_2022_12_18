@@ -16,11 +16,12 @@
           <RegisterWindow
             v-else-if="currentWindow === 'RegisterWindow'"
             @cancel="cancel"
+            @registerSuccess="registerSuccess"
           />
         </Transition>
       </div>
       <div id="logged-in" v-else-if="ifLoggedIn">
-        <MainUI @log-out="handleLogout"/>
+        <MainUI @log-out="handleLogout" :ifLoggedIn="ifLoggedIn" :isAdmin="isAdmin"/>
         </div>
     </Transition>
 </template>
@@ -42,6 +43,7 @@ export default {
       windowList: ["LoginWindow", "RegisterWindow"],
       currentWindow: "LoginWindow",
       ifLoggedIn: false,
+      isAdmin: false,
     };
   },
   methods: {
@@ -51,12 +53,17 @@ export default {
     cancel() {
       this.currentWindow = "LoginWindow";
     },
-    login() {
+    login(isAdmin) {
+      console.log(isAdmin);
+      this.isAdmin = isAdmin;
       this.ifLoggedIn = true;
     },
     handleLogout() {
       this.ifLoggedIn = false;
     },
+    registerSuccess() {
+      this.currentWindow = "LoginWindow";
+    }
   },
 };
 </script>
@@ -108,5 +115,13 @@ body {
 #logged-in {
   width: 100%;
   height: 100%;
+}
+.el-tabs__content{
+  padding: 32px;
+  /* color: #6b778c; */
+  /* font-size: 32px; */
+  /* font-weight: 600; */
+  overflow-y: auto !important;
+  height: 100% !important;
 }
 </style>
