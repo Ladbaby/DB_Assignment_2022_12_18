@@ -19,10 +19,11 @@ from mutagen.mp3 import MP3
 @csrf_exempt
 def index(request):
     current_path = os.path.dirname(__file__)
-    parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
-    dist_path = os.path.join(parent_path, 'dist')
-    file_name = 'index.html'
-    file_path = os.path.join(dist_path, file_name)
+    # parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
+    # dist_path = os.path.join(parent_path, 'dist')
+    # file_name = 'index.html'
+    # file_path = os.path.join(dist_path, file_name)
+    file_path = os.path.join(current_path, "register.html")
     with open(file_path, 'r') as file:
         content = file.read()
         response = HttpResponse()
@@ -116,39 +117,8 @@ def search_artist(request):
             albumID = []
             for row in result:
                 albumID.append(row[0])
-
-        Albums = []
-
-        for album_id in albumID:
-
-            with connection.cursor() as cursor:
-                sql = """SELECT Album.albumID, albumName, artistName, trackID, trackName
-                FROM Artist INNER JOIN Album ON Artist.artistID = Album.artistID 
-                INNER JOIN Track ON Album.albumID = Track.albumID
-                Where Album.albumID = %s AND album.granted = 1"""
-                result = cursor.execute(sql, [album_id,]).fetchall() 
-
-            with connection.cursor() as cursor:
-                sql = """SELECT userID, content
-                FROM Comment WHERE albumID = %s"""
-                comment_result = cursor.execute(sql, [album_id,]).fetchall()
-
-            tracks = []
-            for row in result:
-                trackinfo={}
-                trackinfo['trackID'] = row[3]
-                trackinfo['trackName'] = row[4]
-                tracks.append(trackinfo)
-
-            comments = []
-            for row in comment_result:
-                comment_info = {}
-                comment_info['userID']=row[0]
-                comment_info['comment']=row[1]
-                comments.append(comment_info)
-
-            currentAlbum = {"id": result[0][0], "name": result[0][1], "artist": result[0][2], "tracks": tracks, "comments": comments}
-            Albums.append(currentAlbum)
+        
+        Albums = check_album_utility(albumID)
     
         response_content = {"albums": Albums}
         response = JsonResponse(response_content)
@@ -171,38 +141,7 @@ def search_albumID(request):
         else:
             albumID.append(request.GET.get('target'))
         
-        Albums = []
-
-        for album_id in albumID:
-
-            with connection.cursor() as cursor:
-                sql = """SELECT Album.albumID, albumName, artistName, trackID, trackName
-                FROM Artist INNER JOIN Album ON Artist.artistID = Album.artistID 
-                INNER JOIN Track ON Album.albumID = Track.albumID
-                Where Album.albumID = %s AND album.granted = 1"""
-                result = cursor.execute(sql, [album_id,]).fetchall() 
-
-            with connection.cursor() as cursor:
-                sql = """SELECT userID, content
-                FROM Comment WHERE albumID = %s"""
-                comment_result = cursor.execute(sql, [album_id,]).fetchall()
-
-            tracks = []
-            for row in result:
-                trackinfo={}
-                trackinfo['trackID'] = row[3]
-                trackinfo['trackName'] = row[4]
-                tracks.append(trackinfo)
-
-            comments = []
-            for row in comment_result:
-                comment_info = {}
-                comment_info['userID']=row[0]
-                comment_info['comment']=row[1]
-                comments.append(comment_info)
-
-            currentAlbum = {"id": result[0][0], "name": result[0][1], "artist": result[0][2], "tracks": tracks, "comments": comments}
-            Albums.append(currentAlbum)
+        Albums = check_album_utility(albumID)
     
         response_content = {"albums": Albums}
         response = JsonResponse(response_content)
@@ -251,38 +190,7 @@ def check_collection(request):
             for row in result:
                 albumID.append(row[0])
         
-        Albums = []
-
-        for album_id in albumID:
-
-            with connection.cursor() as cursor:
-                sql = """SELECT Album.albumID, albumName, artistName, trackID, trackName
-                FROM Artist INNER JOIN Album ON Artist.artistID = Album.artistID 
-                INNER JOIN Track ON Album.albumID = Track.albumID
-                Where Album.albumID = %s AND album.granted = 1"""
-                result = cursor.execute(sql, [album_id,]).fetchall() 
-
-            with connection.cursor() as cursor:
-                sql = """SELECT userID, content
-                FROM Comment WHERE albumID = %s"""
-                comment_result = cursor.execute(sql, [album_id,]).fetchall()
-
-            tracks = []
-            for row in result:
-                trackinfo={}
-                trackinfo['trackID'] = row[3]
-                trackinfo['trackName'] = row[4]
-                tracks.append(trackinfo)
-
-            comments = []
-            for row in comment_result:
-                comment_info = {}
-                comment_info['userID']=row[0]
-                comment_info['comment']=row[1]
-                comments.append(comment_info)
-
-            currentAlbum = {"id": result[0][0],"name": result[0][1], "artist": result[0][2], "tracks": tracks, "comments": comments}
-            Albums.append(currentAlbum)
+        Albums = check_album_utility(albumID)
     
         response_content = {"albums": Albums}
         response = JsonResponse(response_content)
@@ -523,6 +431,43 @@ def admin_reply(request):
             return HttpResponse(status = 403)
     # else:
     #     return HttpResponse(status = 403)
+
+@csrf_exempt
+def check_album_utility(album_id_list):
+
+    Albums = []
+
+    for album_id in album_id_list:
+        with connection.cursor() as cursor:
+            sql = """SELECT Album.albumID, albumName, artistName, trackID, trackName
+            FROM Artist INNER JOIN Album ON Artist.artistID = Album.artistID 
+            INNER JOIN Track ON Album.albumID = Track.albumID
+            Where Album.albumID = %s AND album.granted = 1"""
+            result = cursor.execute(sql, [album_id,]).fetchall() 
+
+        with connection.cursor() as cursor:
+            sql = """SELECT userID, content
+            FROM Comment WHERE albumID = %s"""
+            comment_result = cursor.execute(sql, [album_id,]).fetchall()
+
+        tracks = []
+        for row in result:
+            trackinfo={}
+            trackinfo['trackID'] = row[3]
+            trackinfo['trackName'] = row[4]
+            tracks.append(trackinfo)
+        comments = []
+
+        for row in comment_result:
+            comment_info = {}
+            comment_info['userID']=row[0]
+            comment_info['comment']=row[1]
+            comments.append(comment_info)
+
+        currentAlbum = {"id": result[0][0],"name": result[0][1], "artist": result[0][2], "tracks": tracks, "comments": comments}
+        Albums.append(currentAlbum)
+    
+    return Albums
 
 @csrf_exempt
 def upload_utility(request, if_admin):
