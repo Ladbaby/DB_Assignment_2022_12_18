@@ -314,12 +314,13 @@ def play_track(request):
 def send_music(request):
     # if request.user.is_authenticated:
         song_name = request.GET.get('s')
+        song_name += '.mp3'
         current_path = os.path.dirname(__file__)
-        file_path = os.path.join(current_path, 'music/'+song_name+'.mp3')
-        with open(file_path, "rb") as song_file:
+        song_path = os.path.join(os.path.join(current_path, "music"), song_name)
+        with open(song_path, "rb") as song_file:
             response = HttpResponse()
             response['Content-Type']='audio/mp3'
-            response['Content-Length']=os.path.getsize(file_path)
+            response['Content-Length']=os.path.getsize(song_path)
             response.write(song_file.read())
             return response
     # else:
@@ -536,15 +537,15 @@ def upload_utility(request, if_admin):
     current_path = os.path.dirname(__file__)
     for track in request.FILES.lists():
         track_name = track[0]
-        print(track_name)
+        # print(track_name)
         track_files = track[1]
         for track_file in track_files:
-            print(track_file)
+            # print(track_file)
             file_content = track_file.read()
             md5 = hashlib.md5()
             md5.update(file_content)
             track_ID = md5.hexdigest()
-            new_file_path = os.path.join(current_path, "music/"+track_ID+".mp3")
+            new_file_path = os.path.join(os.path.join(current_path, "music"), track_ID+".mp3")
             with open(new_file_path, 'wb') as newfile:
                 newfile.write(file_content)
             audio = MP3(track_file)
