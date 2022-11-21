@@ -1,41 +1,108 @@
 <template>
   <div id="register">
-      <input
-        autocomplete="off"
-        tabindex="1"
-        placeholder="Name"
-        type="text"
-        class="input"
-      />
-      <input
-        autocomplete="off"
-        tabindex="1"
-        placeholder="Password"
-        type="password"
-        class="input"
-      />
-      <input
-        autocomplete="off"
-        tabindex="1"
-        placeholder="Confirm Password"
-        type="password"
-        class="input"
-      />
-      <div id="button-area">
-        <button class="button" id="login-button" type="button" @click="cancel()">Cancel</button>
-        <button class="button" id="register-button" type="button">Sign up</button>
-      </div>
+    <input
+      autocomplete="off"
+      tabindex="1"
+      placeholder="Name"
+      type="text"
+      class="input"
+      v-model="userName"
+    />
+    <input
+      autocomplete="off"
+      tabindex="1"
+      placeholder="Password"
+      type="password"
+      class="input"
+      v-model="password"
+    />
+    <input
+      autocomplete="off"
+      tabindex="1"
+      placeholder="Confirm Password"
+      type="password"
+      class="input"
+      v-model="confirmPassword"
+    />
+    <div id="button-area">
+      <button class="button" id="login-button" type="button" @click="cancel()">
+        Cancel
+      </button>
+      <button
+        class="button"
+        id="register-button"
+        type="button"
+        @click="register()"
+      >
+        Sign up
+      </button>
     </div>
+  </div>
 </template>
 
 <script>
+import axios from "axios";
+import Cookies from "js-cookie";
+import { ElMessage } from "element-plus";
+
 export default {
   name: "RegisterWindow",
+  data() {
+    return {
+      userName: "",
+      password: "",
+      confirmPassword: "",
+    };
+  },
   methods: {
     cancel() {
-      this.$emit('cancel');
-    }
-  }
+      this.$emit("cancel");
+    },
+    async register() {
+      if (this.password != this.confirmPassword) {
+        ElMessage.error("Passwords and confirmed password should be the same");
+        return;
+      }
+      let userName = this.userName;
+      let password = this.password;
+      var csrftoken = Cookies.get("csrftoken");
+      const registerResult = await axios
+        .post(
+          "http://127.0.0.1:8000/register/",
+          {
+            auth: {
+              "user-name": userName,
+              password: password,
+            },
+          },
+          {
+            headers: {
+              "Content-Type": "application/json;charset=UTF-8",
+              "X-CSRFToken": csrftoken,
+            },
+          }
+        )
+        .then(function (response) {
+          console.log(response);
+          return response;
+        })
+        .catch(function (error) {
+          console.log(error);
+          return error;
+        });
+      let statusCode = registerResult["status"];
+      if (statusCode == "200") {
+        ElMessage({
+          type: "success",
+          message: "Successfully register",
+        });
+        this.$emit("registerSuccess");
+      }
+      else {
+        ElMessage.error("Register failed!");
+      }
+    },
+  },
 };
 </script>
 

@@ -47,7 +47,11 @@ POST '/login'
 
 200 OK
 
-set-cookie: session = xxx
+```json
+{
+    "isAdmin": True / False
+}
+```
 
 if login fail (e.g. wrong password)
 
@@ -65,9 +69,21 @@ GET '/search-artist?target=artist-name'
 
 ```json{.line-numbers}
 {
-    "albums" : [
-        {"albumID" : "xxx", "albumName" : "xxx"},
-        {"albumID" : "xxx", "albumName" : "xxx"},
+    "albums": [
+        {
+            "id" : "xxx",
+            "name" : "xxx",
+            "artist" : "xxx",
+            "tracks" : [
+                {"trackID" : "xxx", "trackName" : "xxx"},
+                {"trackID" : "xxx", "trackName" : "xxx"}
+            ],
+            "comments": [
+                {"userID": "xxx", "comment": "xxx"},
+                {"userID": "xxx", "comment": "xxx"}
+            ]
+        },
+        ......
     ]
 }
 
@@ -81,21 +97,29 @@ if not in login status:
 
 ##### 1.4.0.1. Request 
 
-GET '/search-album-id?target=album-id'
+GET 'search-album-id?target=album-id'
+
+GET 'search-album-id/'
 
 ##### 1.4.0.2. Response
 
-```json{.line-numbers}
+```json
 {
-    "name" : "xxx",
-    "artist" : "xxx",
-    "tracks" : [
-        {"trackID" : "xxx", "trackName" : "xxx"},
-        {"trackID" : "xxx", "trackName" : "xxx"}
-    ],
-    "comments": [
-        {"userID": "xxx", "comment": "xxx"},
-        {"userID": "xxx", "comment": "xxx"}
+    "albums": [
+        {
+            "id" : "xxx",
+            "name" : "xxx",
+            "artist" : "xxx",
+            "tracks" : [
+                {"trackID" : "xxx", "trackName" : "xxx"},
+                {"trackID" : "xxx", "trackName" : "xxx"}
+            ],
+            "comments": [
+                {"userID": "xxx", "comment": "xxx"},
+                {"userID": "xxx", "comment": "xxx"}
+            ]
+        },
+        ......
     ]
 }
 ```
@@ -129,6 +153,41 @@ GET '/search-album-name?target=album-name'
             "name" : "xxx",
             "artist" : "xxx",
         },
+    ]
+}
+```
+
+if not in login status:
+
+403 forbidden
+
+### User check person collection
+
+#### Request
+
+GET 'check-collection/'
+
+#### Response
+
+200 OK
+
+```json
+{
+    "albums": [
+        {
+            "id" : "xxx",
+            "name" : "xxx",
+            "artist" : "xxx",
+            "tracks" : [
+                {"trackID" : "xxx", "trackName" : "xxx"},
+                {"trackID" : "xxx", "trackName" : "xxx"}
+            ],
+            "comments": [
+                {"userID": "xxx", "comment": "xxx"},
+                {"userID": "xxx", "comment": "xxx"}
+            ]
+        },
+        ......
     ]
 }
 ```

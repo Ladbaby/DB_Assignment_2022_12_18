@@ -6,6 +6,7 @@
         placeholder="Name"
         type="text"
         class="input"
+        v-model="userName"
       />
       <input
         autocomplete="off"
@@ -13,6 +14,7 @@
         placeholder="Password"
         type="password"
         class="input"
+        v-model="password"
       />
       <div id="button-area">
         <button class="button" id="login-button" type="button" @click="login()">Sign in</button>
@@ -22,11 +24,60 @@
 </template>
 
 <script>
+import axios from "axios";
+import Cookies from "js-cookie";
+import { ElMessage } from "element-plus";
+
 export default {
   name: "LoginWindow",
+  data() {
+    return {
+      userName: "",
+      password: "",
+      // isAdmin: false,
+    };
+  },
   methods: {
-    login() {
-      this.$emit('login');
+    async login() {
+      let userName = this.userName;
+      let password = this.password;
+      var csrftoken = Cookies.get("csrftoken");
+      const loginResult = await axios
+        .post(
+          "http://127.0.0.1:8000/login/",
+          {
+            auth: {
+              "user-name": userName,
+              password: password,
+            },
+          },
+          {
+            headers: {
+              "Content-Type": "application/json;charset=UTF-8",
+              "X-CSRFToken": csrftoken,
+            },
+          }
+        )
+        .then(function (response) {
+          console.log(response);
+          return response;
+        })
+        .catch(function (error) {
+          console.log(error);
+          return error;
+        });
+      let statusCode = loginResult["status"];
+      if (statusCode == "200") {
+        // this.isAdmin = loginResult["data"]["isAdmin"];
+        ElMessage({
+          type: "success",
+          message: "Successfully login",
+        });
+        this.$emit('login', loginResult["data"]["isAdmin"]);
+      }
+      else {
+        ElMessage.error("Login failed!");
+      }
     },
     register() {
       this.$emit('register');

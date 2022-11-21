@@ -17,6 +17,7 @@ urlpatterns += [
 ]
 
 urlpatterns += [
+    path('check-collection/', views.check_collection, name="check-collection"),
     path('add-album/', views.add_album_to_collection, name="add-album"),
     path('remove-album/', views.remove_album_from_collection, name="remove-album"),
 ]
