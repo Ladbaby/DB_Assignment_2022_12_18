@@ -147,12 +147,16 @@ GET '/search-album-name?target=album-name'
             "id" : "xxx",
             "name" : "xxx",
             "artist" : "xxx",
+            "tracks" : [
+                {"trackID" : "xxx", "trackName" : "xxx"},
+                {"trackID" : "xxx", "trackName" : "xxx"}
+            ],
+            "comments": [
+                {"userID": "xxx", "comment": "xxx"},
+                {"userID": "xxx", "comment": "xxx"}
+            ]
         },
-        {
-            "id" : "xxx",
-            "name" : "xxx",
-            "artist" : "xxx",
-        },
+    ......
     ]
 }
 ```
