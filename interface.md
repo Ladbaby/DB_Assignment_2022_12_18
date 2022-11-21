@@ -47,7 +47,11 @@ POST '/login'
 
 200 OK
 
-set-cookie: session = xxx
+```json
+{
+    "isAdmin": True / False
+}
+```
 
 if login fail (e.g. wrong password)
 

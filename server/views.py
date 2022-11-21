@@ -87,7 +87,13 @@ def login(request):
     user = authenticate(username = username, password = password)
     if user is not None:
         Login(request, user)
-        return HttpResponse(status = 200)
+        if request.user.is_staff:
+            response_content = {"isAdmin": True}
+        else:
+            response_content = {"isAdmin": False}
+        response = JsonResponse(response_content)
+        response.status_code = 200
+        return response
     else:
         return HttpResponse(status = 403)
 
