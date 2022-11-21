@@ -349,6 +349,9 @@ export default {
     },
     showSearchBox() {
       this.ifSearchShow = !this.ifSearchShow;
+      if (!this.ifSearchShow) {
+        this.showCollection()
+      }
     },
     handleChange(uploadFile) {
       // this.src = URL.createObjectURL(uploadFile.raw);
@@ -535,7 +538,7 @@ export default {
     async handleSearch() {
       var csrftoken = Cookies.get("csrftoken");
       if (this.searchCat == "Artist") {
-        artistName = this.searchInput;
+        let artistName = this.searchInput;
         let searchResult = await axios
           .get(
             "search-artist?target=" + artistName,
@@ -556,9 +559,9 @@ export default {
           });
         let statusCode = searchResult["status"];
         if (statusCode == "200") {
-          console.log("wtf");
+          this.musicList = searchResult["data"]["albums"];
         } else {
-          ElMessage.error("Request fail!");
+          ElMessage.error("Search fail!");
         }
       }
     }
