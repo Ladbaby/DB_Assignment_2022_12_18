@@ -14,6 +14,8 @@ import json
 import hashlib
 from mutagen.mp3 import MP3
 
+BASE_DIR = os.path.dirname(__file__)
+
 # Create your views here.
 
 @csrf_exempt
@@ -154,24 +156,15 @@ def search_albumID(request):
 def search_albumName(request):
     # if request.user.is_authenticated:
         album_name = request.GET.get('target')
-        albums = []
+        albumID = []
         with connection.cursor() as cursor:
             sql = """SELECT albumID FROM Album WHERE albumName = %s AND album.granted = 1"""
             result = cursor.execute(sql, [album_name,]).fetchall()
             for row in result:
-                album_ID = row[0]
-                with connection.cursor() as cursor1:
-                    sql = """SELECT artistName
-                    FROM Artist INNER JOIN Album ON Artist.artistID = Album.artistID
-                    WHERE Album.albumID = %s"""
-                    result_tracks = cursor1.execute(sql, [album_ID,]).fetchall()
-
-                    album_info = {}
-                    album_info['id'] = album_ID
-                    album_info['name'] = album_name
-                    album_info['artist'] = result_tracks[0][0]
-                albums.append(album_info)
-        response = JsonResponse({"albums": albums})
+                albumID.append(row[0])
+        
+        Albums = check_album_utility(albumID)
+        response = JsonResponse({"albums": Albums})
         response.status_code = 200
         return response
     # else:
