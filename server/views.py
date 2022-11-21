@@ -127,7 +127,7 @@ def search_albumID(request):
         albumID = []
         if len(request.GET) == 0:
             with connection.cursor() as cursor:
-                sql = """SELECT albumID from Album"""
+                sql = """SELECT albumID from Album Where Album.granted = 1"""
                 result = cursor.execute(sql).fetchall()
                 for row in result:
                     albumID.append(row[0])

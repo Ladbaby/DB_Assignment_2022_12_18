@@ -173,13 +173,23 @@
                   <span
                     ><small>{{ item["artist"] }}</small></span
                   >
+                  <el-button
+                    type="warning"
+                    icon="Star"
+                    circle
+                    v-show="ifShowAllAlbum"
+                    @click="addToCollection(item)"
+                  />
                 </div>
               </div>
             </el-card>
           </li>
         </ul>
         <div id="album-container" v-if="ifShowAlbumDetail">
-          <AlbumDetail :album="selectedAlbum"></AlbumDetail>
+          <AlbumDetail
+            :album="selectedAlbum"
+            @album-detail-return="albumDetailReturn"
+          ></AlbumDetail>
         </div>
       </div>
       <el-container id="settings-div" v-else-if="currentTab == 'settings'">
@@ -256,6 +266,7 @@
             icon="Star"
             size="large"
             circle
+            @click="handleStar"
             v-if="currentTab == 'main'"
           />
         </Transition>
@@ -298,10 +309,11 @@ export default {
       },
       musicList: [
         {
+          id: "1",
           name: "test",
           artist: "?",
-          tracks: [{ trackID: "1", trackName: "hello" }],
-          comments: [{ userID: "1", comment: "wtf" }],
+          // tracks: [{ trackID: "1", trackName: "hello" }],
+          // comments: [{ userID: "1", comment: "wtf" }],
         },
       ],
       fileList: [],
@@ -311,6 +323,7 @@ export default {
       uploadAlbumName: "",
       selectedAlbum: "",
       ifShowAlbumDetail: false,
+      ifShowAllAlbum: false,
       src: "",
     };
   },
@@ -435,14 +448,14 @@ export default {
           }
 
           const submitResult = await axios({
-              method: "post",
-              url: "upload/",
-              data: formData,
-              headers: {
-                "Content-Type": "multipart/form-data",
-                "X-CSRFToken": csrftoken,
-              },
-            })
+            method: "post",
+            url: "upload/",
+            data: formData,
+            headers: {
+              "Content-Type": "multipart/form-data",
+              "X-CSRFToken": csrftoken,
+            },
+          })
             .then(function (response) {
               console.log(response);
               return response;
@@ -498,9 +511,71 @@ export default {
       }
     },
     handleAlbumClicked(album) {
-      console.log("wtf");
       this.selectedAlbum = album;
       this.ifShowAlbumDetail = true;
+    },
+    async handleStar() {
+      this.ifShowAllAlbum = !this.ifShowAllAlbum;
+      if (this.ifShowAllAlbum) {
+        var csrftoken = Cookies.get("csrftoken");
+        let showCollectionResult = await axios
+          .get("search-album-id/", {
+            headers: {
+              "Content-Type": "application/json;charset=UTF-8",
+              "X-CSRFToken": csrftoken,
+            },
+          })
+          .then(function (response) {
+            console.log(response);
+            return response;
+          })
+          .catch(function (error) {
+            console.log(error);
+            return error;
+          });
+        let statusCode = showCollectionResult["status"];
+        if (statusCode == "200") {
+          this.musicList = showCollectionResult["data"]["albums"];
+        } else {
+          ElMessage.error("Fail to load the albums!");
+        }
+      } else {
+        this.showCollection();
+      }
+    },
+    albumDetailReturn() {
+      this.ifShowAlbumDetail = false;
+    },
+    async addToCollection(albumID) {
+      console.log(albumID);
+      var csrftoken = Cookies.get("csrftoken");
+      let addToCollectionResult = await axios
+        .post("add-album/", {
+          data: {
+            "id": albumID,
+          },
+          headers: {
+            "Content-Type": "application/json;charset=UTF-8",
+            "X-CSRFToken": csrftoken,
+          },
+        })
+        .then(function (response) {
+          console.log(response);
+          return response;
+        })
+        .catch(function (error) {
+          console.log(error);
+          return error;
+        });
+      let statusCode = addToCollectionResult["status"];
+      if (statusCode == "200") {
+        ElMessage({
+            type: "success",
+            message: "Waiting for administrator to permit the request",
+          });
+      } else {
+        ElMessage.error("Request fail!");
+      }
     },
   },
 };
@@ -1022,5 +1097,12 @@ input.input:focus {
   border-radius: 10px;
   backdrop-filter: blur(5px);
   transition: all 0.5s ease-in-out;
+}
+.buttom {
+  margin-top: 13px;
+  line-height: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

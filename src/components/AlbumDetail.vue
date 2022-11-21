@@ -1,6 +1,7 @@
 <template>
   <el-container id="album-container">
     <el-header style="text-align: center">
+      <el-button @click="albumDetailReturn">return</el-button>
       <h1>{{ this.album.name + "——" + this.album.artist }}</h1>
     </el-header>
     <el-main>
@@ -8,22 +9,27 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header">
+              <el-button @click="handlePlay(item.trackID)">Play</el-button>
               <span>{{ item.trackName }}</span>
             </div>
           </template>
-          <audio class="audio" :src="url" @play="handlePlay(item.id)" controls>
-          </audio>
         </el-card>
       </div>
     </el-main>
+    <el-footer>
+      <audio
+        class="audio"
+        :src="url"
+        controls
+      ></audio>
+    </el-footer>
   </el-container>
 </template>
 
 <script>
 import Cookies from "js-cookie";
-import { ElMessage} from "element-plus";
+import { ElMessage } from "element-plus";
 import axios from "axios";
-
 
 export default {
   props: {
@@ -64,12 +70,15 @@ export default {
         });
       let statusCode = playResult["status"];
       if (statusCode == "200") {
-        this.url = statusCode["data"]["url"];
+        this.url = playResult["data"]["url"];
       } else {
         ElMessage.error("Fail to load the track!");
       }
-    }
-  }
+    },
+    albumDetailReturn() {
+      this.$emit("album-detail-return");
+    },
+  },
 };
 </script>
 
