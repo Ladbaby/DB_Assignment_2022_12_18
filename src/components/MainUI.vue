@@ -36,7 +36,9 @@
           </el-select>
         </template>
         <template #append>
-          <el-button @click="handleSearch"><el-icon><Search/></el-icon></el-button>
+          <el-button @click="handleSearch"
+            ><el-icon><Search /></el-icon
+          ></el-button>
         </template>
       </el-input>
     </transition>
@@ -350,7 +352,7 @@ export default {
     showSearchBox() {
       this.ifSearchShow = !this.ifSearchShow;
       if (!this.ifSearchShow) {
-        this.showCollection()
+        this.showCollection();
       }
     },
     handleChange(uploadFile) {
@@ -535,36 +537,67 @@ export default {
         ElMessage.error("Request fail!");
       }
     },
-    async handleSearch() {
-      var csrftoken = Cookies.get("csrftoken");
+    handleSearch() {
       if (this.searchCat == "Artist") {
-        let artistName = this.searchInput;
-        let searchResult = await axios
-          .get(
-            "search-artist?target=" + artistName,
-            {
-              headers: {
-                "Content-Type": "application/json;charset=UTF-8",
-                "X-CSRFToken": csrftoken,
-              },
-            }
-          )
-          .then(function (response) {
-            console.log(response);
-            return response;
-          })
-          .catch(function (error) {
-            console.log(error);
-            return error;
-          });
-        let statusCode = searchResult["status"];
-        if (statusCode == "200") {
-          this.musicList = searchResult["data"]["albums"];
-        } else {
-          ElMessage.error("Search fail!");
-        }
+        this.searchArtist(this.searchInput);
+      } else if (this.searchCat == "Artist") {
+        this.searchAlbum(this.searchInput);
       }
-    }
+      else if (this.searchCat == "All") {
+        this.searchArtist(this.searchInput);
+        this.searchAlbum(this.searchInput);
+      }
+    },
+    async searchArtist(artistName) {
+      var csrftoken = Cookies.get("csrftoken");
+      let searchResult = await axios
+        .get("search-artist?target=" + artistName, {
+          headers: {
+            "Content-Type": "application/json;charset=UTF-8",
+            "X-CSRFToken": csrftoken,
+          },
+        })
+        .then(function (response) {
+          console.log(response);
+          return response;
+        })
+        .catch(function (error) {
+          console.log(error);
+          return error;
+        });
+      let statusCode = searchResult["status"];
+      if (statusCode == "200") {
+        return searchResult["data"]["albums"];
+      } else {
+        ElMessage.error("Search fail!");
+        return [];
+      }
+    },
+    async searchAlbum(albumName) {
+      var csrftoken = Cookies.get("csrftoken");
+      let searchResult = await axios
+        .get("search-album-name?target=" + albumName, {
+          headers: {
+            "Content-Type": "application/json;charset=UTF-8",
+            "X-CSRFToken": csrftoken,
+          },
+        })
+        .then(function (response) {
+          console.log(response);
+          return response;
+        })
+        .catch(function (error) {
+          console.log(error);
+          return error;
+        });
+      let statusCode = searchResult["status"];
+      if (statusCode == "200") {
+        return searchResult["data"]["albums"];
+      } else {
+        ElMessage.error("Search fail!");
+        return [];
+      }
+    },
   },
 };
 </script>

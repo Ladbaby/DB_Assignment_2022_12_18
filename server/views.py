@@ -19,11 +19,10 @@ from mutagen.mp3 import MP3
 @csrf_exempt
 def index(request):
     current_path = os.path.dirname(__file__)
-    # parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
-    # dist_path = os.path.join(parent_path, 'dist')
-    # file_name = 'index.html'
-    # file_path = os.path.join(dist_path, file_name)
-    file_path = os.path.join(current_path, "register.html")
+    parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
+    dist_path = os.path.join(parent_path, 'dist')
+    file_name = 'index.html'
+    file_path = os.path.join(dist_path, file_name)
     with open(file_path, 'r') as file:
         content = file.read()
         response = HttpResponse()
