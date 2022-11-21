@@ -402,7 +402,7 @@ def check_upload(request):
                 else:
                     pass
                 notification.append(check_content)
-            response_content = {"notication": notification}
+            response_content = {"notification": notification}
             response = JsonResponse(response_content)
             response.status_code = 200
             return response

@@ -34,6 +34,7 @@ export default {
     return {
       userName: "",
       password: "",
+      // isAdmin: false,
     };
   },
   methods: {
@@ -67,11 +68,12 @@ export default {
         });
       let statusCode = loginResult["status"];
       if (statusCode == "200") {
+        // this.isAdmin = loginResult["data"]["isAdmin"];
         ElMessage({
           type: "success",
           message: "Successfully login",
         });
-        this.$emit('login');
+        this.$emit('login', loginResult["data"]["isAdmin"]);
       }
       else {
         ElMessage.error("Login failed!");

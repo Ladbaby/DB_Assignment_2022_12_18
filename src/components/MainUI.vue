@@ -23,17 +23,20 @@
     </el-menu>
     <transition name="el-zoom-in-center">
       <el-input
-        v-model="input3"
-        placeholder="Please input"
+        v-model="searchInput"
+        placeholder="Search..."
         id="search-box"
         v-if="ifSearchShow"
       >
         <template #prepend>
           <el-select v-model="searchCat" placeholder="All" style="width: 115px">
-            <el-option label="All" value="1" />
-            <el-option label="Artist" value="2" />
-            <el-option label="Album" value="3" />
+            <el-option label="All" value="All" />
+            <el-option label="Artist" value="Artist" />
+            <el-option label="Album" value="Album" />
           </el-select>
+        </template>
+        <template #append>
+          <el-button @click="handleSearch"><el-icon><Search/></el-icon></el-button>
         </template>
       </el-input>
     </transition>
@@ -192,40 +195,9 @@
           ></AlbumDetail>
         </div>
       </div>
-      <el-container id="settings-div" v-else-if="currentTab == 'settings'">
-        <el-aside width="200px" id="settings-aside">
-          <el-scrollbar>
-            <el-menu :default-openeds="['1', '3']" id="settings-menu">
-              <el-menu-item index="1">
-                <template #title>
-                  <el-icon><User /></el-icon>User
-                </template>
-              </el-menu-item>
-              <el-menu-item index="2">
-                <template #title>
-                  <el-icon><PictureRounded /></el-icon>Appearance
-                </template>
-              </el-menu-item>
-            </el-menu>
-          </el-scrollbar>
-        </el-aside>
-        <el-main id="settings-main">
-          <el-scrollbar>
-            <el-row :gutter="20">
-              <el-col :span="4">
-                <el-avatar
-                  src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-                  :size="100"
-                />
-              </el-col>
-              <el-col :span="4">
-                <h2>Administrator</h2>
-              </el-col>
-            </el-row>
-            <hr style="width: 95%" />
-          </el-scrollbar>
-        </el-main>
-      </el-container>
+      <div id="notification-div" v-else-if="currentTab == 'notification'">
+        <NotificationView :isAdmin="isAdmin"></NotificationView>
+      </div>
     </Transition>
   </div>
   <Transition name="add-item-up">
@@ -291,22 +263,22 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import axios from "axios";
 import Cookies from "js-cookie";
 import AlbumDetail from "./AlbumDetail.vue";
+import NotificationView from "./NotificationView.vue";
 
 export default {
   name: "MainUI",
   components: {
     AlbumDetail,
+    NotificationView,
   },
   props: {
     ifLoggedIn: Boolean,
+    isAdmin: Boolean,
   },
   data() {
     return {
-      currentTab: "main", // main, settings, upload
+      currentTab: "main", // main, notification, upload
       ifSearchShow: false,
-      icons: {
-        // mdiAccount,
-      },
       musicList: [
         {
           id: "1",
@@ -317,7 +289,6 @@ export default {
         },
       ],
       fileList: [],
-      searchCat: "",
       stepActive: 0,
       uploadArtistName: "",
       uploadAlbumName: "",
@@ -325,6 +296,8 @@ export default {
       ifShowAlbumDetail: false,
       ifShowAllAlbum: false,
       src: "",
+      searchCat: "All",
+      searchInput: "",
     };
   },
   watch: {
@@ -345,32 +318,11 @@ export default {
     register() {
       this.$emit("register");
     },
-    addItem() {
-      this.ifEditShow = true;
-      return;
-    },
-    confirmItem() {
-      this.ifEditShow = false;
-      return;
-    },
-    editItem() {
-      return;
-    },
-    abortNewItem() {
-      this.ifEditShow = false;
-      return;
-    },
-    hideDetail() {
-      return;
-    },
-    openSettings() {
-      return;
-    },
     handleSelect(key) {
       if (key == 1) {
         this.currentTab = "main";
       } else if (key == 2) {
-        this.currentTab = "settings";
+        this.currentTab = "notification";
       } else if (key == 3) {
         this.currentTab = "upload";
         this.ifSearchShow = false;
@@ -550,16 +502,18 @@ export default {
       console.log(albumID);
       var csrftoken = Cookies.get("csrftoken");
       let addToCollectionResult = await axios
-        .post("add-album/", 
-        {
-          "id": albumID,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json;charset=UTF-8",
-            "X-CSRFToken": csrftoken,
+        .post(
+          "add-album/",
+          {
+            id: albumID,
           },
-        })
+          {
+            headers: {
+              "Content-Type": "application/json;charset=UTF-8",
+              "X-CSRFToken": csrftoken,
+            },
+          }
+        )
         .then(function (response) {
           console.log(response);
           return response;
@@ -571,13 +525,43 @@ export default {
       let statusCode = addToCollectionResult["status"];
       if (statusCode == "200") {
         ElMessage({
-            type: "success",
-            message: "Waiting for administrator to permit the request",
-          });
+          type: "success",
+          message: "Waiting for administrator to permit the request",
+        });
       } else {
         ElMessage.error("Request fail!");
       }
     },
+    async handleSearch() {
+      var csrftoken = Cookies.get("csrftoken");
+      if (this.searchCat == "Artist") {
+        artistName = this.searchInput;
+        let searchResult = await axios
+          .get(
+            "search-artist?target=" + artistName,
+            {
+              headers: {
+                "Content-Type": "application/json;charset=UTF-8",
+                "X-CSRFToken": csrftoken,
+              },
+            }
+          )
+          .then(function (response) {
+            console.log(response);
+            return response;
+          })
+          .catch(function (error) {
+            console.log(error);
+            return error;
+          });
+        let statusCode = searchResult["status"];
+        if (statusCode == "200") {
+          console.log("wtf");
+        } else {
+          ElMessage.error("Request fail!");
+        }
+      }
+    }
   },
 };
 </script>
@@ -771,7 +755,7 @@ input.search-box-input:focus {
 #return-button {
   grid-column: 3;
 }
-#settings-button {
+#notification-button {
   grid-column: 3;
 }
 @media (-webkit-device-pixel-ratio: 1.5),
@@ -809,7 +793,7 @@ input.search-box-input:focus {
   transform-origin: center center;
   animation: scale 0.2s ease-in-out forwards;
 }
-#item-controls #settings-button:hover img {
+#item-controls #notification-button:hover img {
   transform-origin: center center;
   animation: scaleRotate 0.2s ease-in-out forwards;
 }
@@ -848,7 +832,7 @@ input.search-box-input:focus {
 #return-button:active .icon {
   filter: invert(1);
 }
-#settings-button:active .icon {
+#notification-button:active .icon {
   filter: invert(1);
 }
 #body {
@@ -1003,33 +987,7 @@ input.search-box-input:focus {
   opacity: 0;
   transform: translateX(30px);
 }
-#settings-div {
-  /* overflow: hidden; */
-  width: calc(100% - 20px);
-  height: calc(100% - 86px);
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  /* background-color: hsla(0, 0%, 100%, 0.7) !important; */
-  /* box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 5px 8px 0 rgb(0 0 0 / 14%), */
-  /* 0 1px 14px 0 rgb(0 0 0 / 12%) !important; */
-  border-radius: 10px;
-  /* backdrop-filter: blur(5px); */
-  transition: all 0.5s ease-in-out;
-}
-#settings-aside {
-  border-radius: 10px;
-}
-#settings-menu {
-  border-radius: 10px;
-  min-height: 100vh;
-}
-#settings-main {
-  border-radius: 10px;
-  background-color: hsla(0, 0%, 100%, 0.9) !important;
-  backdrop-filter: blur(5px);
-  margin-left: 10px;
-}
+
 #step {
   margin: 20px;
 }
@@ -1105,5 +1063,19 @@ input.input:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+#notification-div {
+  /* overflow: hidden; */
+  width: calc(100% - 20px);
+  height: calc(100% - 86px);
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background-color: hsla(0, 0%, 100%, 0.7) !important;
+  box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 5px 8px 0 rgb(0 0 0 / 14%),
+    0 1px 14px 0 rgb(0 0 0 / 12%) !important;
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+  transition: all 0.5s ease-in-out;
 }
 </style>
