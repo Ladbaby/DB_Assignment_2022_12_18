@@ -109,20 +109,51 @@ def search_artist(request):
     # if request.user.is_authenticated:
         artist_name = request.GET.get('target')
         with connection.cursor() as cursor:
-            sql = """SELECT albumID, albumName
+            sql = """SELECT albumID
             FROM Artist INNER JOIN Album ON Artist.artistID = Album.artistID 
             WHERE artistName = %s AND album.granted = 1"""
             result = cursor.execute(sql, [artist_name,]).fetchall()
-            albums = []
+            albumID = []
             for row in result:
-                albuminfo={}
-                albuminfo['albumID'] = row[0]
-                albuminfo['albumName'] = row[1]
-                albums.append(albuminfo)
-            response_content = {"albums": albums}
-            response = JsonResponse(response_content)
-            response.status_code = 200
-            return response
+                albumID.append(row[0])
+
+        Albums = []
+
+        for album_id in albumID:
+
+            with connection.cursor() as cursor:
+                sql = """SELECT Album.albumID, albumName, artistName, trackID, trackName
+                FROM Artist INNER JOIN Album ON Artist.artistID = Album.artistID 
+                INNER JOIN Track ON Album.albumID = Track.albumID
+                Where Album.albumID = %s AND album.granted = 1"""
+                result = cursor.execute(sql, [album_id,]).fetchall() 
+
+            with connection.cursor() as cursor:
+                sql = """SELECT userID, content
+                FROM Comment WHERE albumID = %s"""
+                comment_result = cursor.execute(sql, [album_id,]).fetchall()
+
+            tracks = []
+            for row in result:
+                trackinfo={}
+                trackinfo['trackID'] = row[3]
+                trackinfo['trackName'] = row[4]
+                tracks.append(trackinfo)
+
+            comments = []
+            for row in comment_result:
+                comment_info = {}
+                comment_info['userID']=row[0]
+                comment_info['comment']=row[1]
+                comments.append(comment_info)
+
+            currentAlbum = {"id": result[0][0], "name": result[0][1], "artist": result[0][2], "tracks": tracks, "comments": comments}
+            Albums.append(currentAlbum)
+    
+        response_content = {"albums": Albums}
+        response = JsonResponse(response_content)
+        response.status_code = 200
+        return response
     # else:
         # return HttpResponse(status = 403)
 

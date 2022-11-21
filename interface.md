@@ -69,9 +69,21 @@ GET '/search-artist?target=artist-name'
 
 ```json{.line-numbers}
 {
-    "albums" : [
-        {"albumID" : "xxx", "albumName" : "xxx"},
-        {"albumID" : "xxx", "albumName" : "xxx"},
+    "albums": [
+        {
+            "id" : "xxx",
+            "name" : "xxx",
+            "artist" : "xxx",
+            "tracks" : [
+                {"trackID" : "xxx", "trackName" : "xxx"},
+                {"trackID" : "xxx", "trackName" : "xxx"}
+            ],
+            "comments": [
+                {"userID": "xxx", "comment": "xxx"},
+                {"userID": "xxx", "comment": "xxx"}
+            ]
+        },
+        ......
     ]
 }
 
