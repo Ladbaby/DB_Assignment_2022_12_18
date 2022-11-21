@@ -178,7 +178,7 @@
                     icon="Star"
                     circle
                     v-show="ifShowAllAlbum"
-                    @click="addToCollection(item)"
+                    @click="addToCollection(item.id)"
                   />
                 </div>
               </div>
@@ -312,8 +312,8 @@ export default {
           id: "1",
           name: "test",
           artist: "?",
-          // tracks: [{ trackID: "1", trackName: "hello" }],
-          // comments: [{ userID: "1", comment: "wtf" }],
+          tracks: [{ trackID: "1", trackName: "hello" }],
+          comments: [{ userID: "1", comment: "wtf" }],
         },
       ],
       fileList: [],
@@ -550,10 +550,11 @@ export default {
       console.log(albumID);
       var csrftoken = Cookies.get("csrftoken");
       let addToCollectionResult = await axios
-        .post("add-album/", {
-          data: {
-            "id": albumID,
-          },
+        .post("add-album/", 
+        {
+          "id": albumID,
+        },
+        {
           headers: {
             "Content-Type": "application/json;charset=UTF-8",
             "X-CSRFToken": csrftoken,
