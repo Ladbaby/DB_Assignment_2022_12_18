@@ -461,7 +461,7 @@ def admin_check_upload(request):
                             return HttpResponse(status = 400)
 
                         if not tracks:
-                            return JsonResponse({"upload": []}, status = 200)
+                            continue
 
                         track_list = []
                         for track in tracks:
