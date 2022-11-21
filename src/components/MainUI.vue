@@ -42,6 +42,7 @@
     <Transition name="add-item-up">
       <el-container id="add-div" v-if="currentTab == 'upload'">
         <el-header height="90px">
+          <!-- <audio :src="src" controls></audio> -->
           <el-steps
             :active="stepActive"
             finish-status="success"
@@ -92,6 +93,7 @@
                       placeholder="artist's name"
                       type="text"
                       class="input"
+                      v-model="uploadArtistName"
                     />
                   </center>
                 </el-col>
@@ -114,6 +116,7 @@
                       placeholder="album's name"
                       type="text"
                       class="input"
+                      v-model="uploadAlbumName"
                     />
                   </center>
                 </el-col>
@@ -146,28 +149,38 @@
       </el-container>
       <div id="music-list-div" v-else-if="currentTab == 'main'">
         <ul id="music-list-ul">
-          <li class="music-card" v-for="item in musicList" :key="item">
+          <li
+            class="music-card"
+            v-for="item in musicList"
+            :key="item"
+            @click="handleAlbumClicked(item)"
+          >
             <el-card
               :body-style="{ padding: '5px' }"
               :style="{
                 borderRadius: '10px',
               }"
               shadow="always"
-              Round
+              round
             >
               <img
                 src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
                 class="image"
               />
-              <div style="padding: 14px;">
-                <span style="overflow-wrap: anywhere;">{{ item["name"] }}</span>
+              <div style="padding: 14px">
+                <span style="overflow-wrap: anywhere">{{ item["name"] }}</span>
                 <div class="bottom">
-                  <span><small>{{ item["artist"] }}</small></span>
+                  <span
+                    ><small>{{ item["artist"] }}</small></span
+                  >
                 </div>
               </div>
             </el-card>
           </li>
         </ul>
+        <div id="album-container" v-if="ifShowAlbumDetail">
+          <AlbumDetail :album="selectedAlbum"></AlbumDetail>
+        </div>
       </div>
       <el-container id="settings-div" v-else-if="currentTab == 'settings'">
         <el-aside width="200px" id="settings-aside">
@@ -266,9 +279,13 @@
 import { ElMessage, ElMessageBox } from "element-plus";
 import axios from "axios";
 import Cookies from "js-cookie";
+import AlbumDetail from "./AlbumDetail.vue";
 
 export default {
   name: "MainUI",
+  components: {
+    AlbumDetail,
+  },
   props: {
     ifLoggedIn: Boolean,
   },
@@ -280,21 +297,21 @@ export default {
         // mdiAccount,
       },
       musicList: [
-        "music1",
-        "music2",
-        "music3",
-        "music4",
-        "music5",
-        "music6",
-        "music7",
-        "music8",
-        "music9",
-        "music10",
-        "music11",
+        {
+          name: "test",
+          artist: "?",
+          tracks: [{ trackID: "1", trackName: "hello" }],
+          comments: [{ userID: "1", comment: "wtf" }],
+        },
       ],
       fileList: [],
       searchCat: "",
       stepActive: 0,
+      uploadArtistName: "",
+      uploadAlbumName: "",
+      selectedAlbum: "",
+      ifShowAlbumDetail: false,
+      src: "",
     };
   },
   watch: {
@@ -302,14 +319,11 @@ export default {
       handler(newValue) {
         console.log(newValue);
         if (newValue == true) {
-          this.showAllAlbums();
+          this.showCollection();
         }
       },
       immediate: true,
     },
-  },
-  components: {
-    // SvgIcon,
   },
   methods: {
     login() {
@@ -372,8 +386,8 @@ export default {
       this.ifSearchShow = !this.ifSearchShow;
     },
     handleChange(uploadFile) {
+      // this.src = URL.createObjectURL(uploadFile.raw);
       this.fileList.push(uploadFile);
-      console.log(uploadFile);
     },
     handleCheck() {
       axios
@@ -391,13 +405,78 @@ export default {
     back() {
       this.stepActive > 0 ? this.stepActive-- : 0;
     },
-    next() {
-      this.stepActive < 2 ? this.stepActive++ : 2;
+    async next() {
+      if (this.stepActive == 2) {
+        const messageResult = await ElMessageBox.confirm(
+          "Confirm to upload the Album?",
+          "Warning",
+          {
+            confirmButtonText: "OK",
+            cancelButtonText: "Cancel",
+            type: "warning",
+          }
+        )
+          .then(() => {
+            return "success";
+          })
+          .catch(() => {
+            return "failure";
+          });
+        var csrftoken = Cookies.get("csrftoken");
+        if (messageResult == "success") {
+          // let name = this.uploadAlbumName;
+          // let artist = this.uploadArtistName;
+          // let fileList = this.fileList;
+          const formData = new FormData();
+          formData.append("name", this.uploadAlbumName);
+          formData.append("artist", this.uploadArtistName);
+          for (let i = 0; i < this.fileList.length; ++i) {
+            formData.append(this.fileList[i].name, this.fileList[i].raw);
+          }
+
+          const submitResult = await axios({
+              method: "post",
+              url: "upload/",
+              data: formData,
+              headers: {
+                "Content-Type": "multipart/form-data",
+                "X-CSRFToken": csrftoken,
+              },
+            })
+            .then(function (response) {
+              console.log(response);
+              return response;
+            })
+            .catch(function (error) {
+              console.log(error);
+              return error;
+            });
+          let statusCode = submitResult["status"];
+          if (statusCode == "200") {
+            ElMessage({
+              type: "success",
+              message: "Successfully upload album",
+            });
+            this.showCollection();
+            this.stepActive = 0;
+            this.currentTab = "main";
+          } else {
+            ElMessage.error("Upload failed! Fields' value cannot be empty!");
+          }
+        } else if (messageResult == "failure") {
+          ElMessage({
+            type: "info",
+            message: "Upload canceled",
+          });
+        }
+      } else {
+        this.stepActive < 2 ? this.stepActive++ : 2;
+      }
     },
-    async showAllAlbums() {
+    async showCollection() {
       var csrftoken = Cookies.get("csrftoken");
-      let showAllAlbumsResult = await axios
-        .get("http://127.0.0.1:8000/search-album-id/", {
+      let showCollectionResult = await axios
+        .get("check-collection/", {
           headers: {
             "Content-Type": "application/json;charset=UTF-8",
             "X-CSRFToken": csrftoken,
@@ -411,13 +490,17 @@ export default {
           console.log(error);
           return error;
         });
-      let statusCode = showAllAlbumsResult["status"];
+      let statusCode = showCollectionResult["status"];
       if (statusCode == "200") {
-        this.musicList = showAllAlbumsResult["data"]["albums"];
-      }
-      else {
+        this.musicList = showCollectionResult["data"]["albums"];
+      } else {
         ElMessage.error("Fail to load the albums!");
       }
+    },
+    handleAlbumClicked(album) {
+      console.log("wtf");
+      this.selectedAlbum = album;
+      this.ifShowAlbumDetail = true;
     },
   },
 };
@@ -789,8 +872,8 @@ input.search-box-input:focus {
   /* height: 100%; */
 }
 #music-list-div {
-  /* width: 100%; */
-  /* height: 100%; */
+  width: 100%;
+  height: 100%;
   transition: all 0.5s ease-in-out;
   overflow: auto;
 }
@@ -926,5 +1009,18 @@ input.input:focus {
 .slide-up-leave-active {
   animation: zoomOut;
   animation-duration: 0.2s;
+}
+#album-container {
+  width: calc(100% - 20px);
+  height: calc(100% - 86px);
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background-color: hsla(0, 0%, 100%, 0.7) !important;
+  box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 5px 8px 0 rgb(0 0 0 / 14%),
+    0 1px 14px 0 rgb(0 0 0 / 12%) !important;
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+  transition: all 0.5s ease-in-out;
 }
 </style>
