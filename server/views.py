@@ -139,7 +139,7 @@ def search_albumID(request):
         for album_id in albumID:
 
             with connection.cursor() as cursor:
-                sql = """SELECT albumName, artistName, trackID, trackName
+                sql = """SELECT Album.albumID, albumName, artistName, trackID, trackName
                 FROM Artist INNER JOIN Album ON Artist.artistID = Album.artistID 
                 INNER JOIN Track ON Album.albumID = Track.albumID
                 Where Album.albumID = %s AND album.granted = 1"""
@@ -153,8 +153,8 @@ def search_albumID(request):
             tracks = []
             for row in result:
                 trackinfo={}
-                trackinfo['trackID'] = row[2]
-                trackinfo['trackName'] = row[3]
+                trackinfo['trackID'] = row[3]
+                trackinfo['trackName'] = row[4]
                 tracks.append(trackinfo)
 
             comments = []
@@ -164,7 +164,7 @@ def search_albumID(request):
                 comment_info['comment']=row[1]
                 comments.append(comment_info)
 
-            currentAlbum = {"name": result[0][0], "artist": result[0][1], "tracks": tracks, "comments": comments}
+            currentAlbum = {"id": result[0][0], "name": result[0][1], "artist": result[0][2], "tracks": tracks, "comments": comments}
             Albums.append(currentAlbum)
     
         response_content = {"albums": Albums}
@@ -219,7 +219,7 @@ def check_collection(request):
         for album_id in albumID:
 
             with connection.cursor() as cursor:
-                sql = """SELECT albumName, artistName, trackID, trackName
+                sql = """SELECT Album.albumID, albumName, artistName, trackID, trackName
                 FROM Artist INNER JOIN Album ON Artist.artistID = Album.artistID 
                 INNER JOIN Track ON Album.albumID = Track.albumID
                 Where Album.albumID = %s AND album.granted = 1"""
@@ -233,8 +233,8 @@ def check_collection(request):
             tracks = []
             for row in result:
                 trackinfo={}
-                trackinfo['trackID'] = row[2]
-                trackinfo['trackName'] = row[3]
+                trackinfo['trackID'] = row[3]
+                trackinfo['trackName'] = row[4]
                 tracks.append(trackinfo)
 
             comments = []
@@ -244,7 +244,7 @@ def check_collection(request):
                 comment_info['comment']=row[1]
                 comments.append(comment_info)
 
-            currentAlbum = {"name": result[0][0], "artist": result[0][1], "tracks": tracks, "comments": comments}
+            currentAlbum = {"id": result[0][0],"name": result[0][1], "artist": result[0][2], "tracks": tracks, "comments": comments}
             Albums.append(currentAlbum)
     
         response_content = {"albums": Albums}

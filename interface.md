@@ -91,6 +91,7 @@ GET 'search-album-id/'
 {
     "albums": [
         {
+            "id" : "xxx",
             "name" : "xxx",
             "artist" : "xxx",
             "tracks" : [
@@ -158,6 +159,7 @@ GET 'check-collection/'
 {
     "albums": [
         {
+            "id" : "xxx",
             "name" : "xxx",
             "artist" : "xxx",
             "tracks" : [
