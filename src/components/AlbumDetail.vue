@@ -17,11 +17,7 @@
       </div>
     </el-main>
     <el-footer>
-      <audio
-        class="audio"
-        :src="url"
-        controls
-      ></audio>
+      <audio class="audio" :src="url" controls @play="recordLastPlay"></audio>
     </el-footer>
   </el-container>
 </template>
@@ -38,20 +34,12 @@ export default {
   data() {
     return {
       url: "",
+      id: "",
     };
   },
-  // watch: {
-  //   album: {
-  //     handler(newValue) {
-  //       if (ifShowAlbumDetail == true) {
-  //         this.showCollection();
-  //       }
-  //     },
-  //     immediate: true,
-  //   },
-  // },
   methods: {
     async handlePlay(id) {
+      this.id = id;
       var csrftoken = Cookies.get("csrftoken");
       let playResult = await axios
         .get("play/?target=" + id, {
@@ -77,6 +65,33 @@ export default {
     },
     albumDetailReturn() {
       this.$emit("album-detail-return");
+    },
+    recordLastPlay() {
+      let time = Date.now();
+      let id = this.id
+      var csrftoken = Cookies.get("csrftoken");
+      axios
+        .post(
+          "track-lastplay/",
+          {
+            id: id,
+            time: time,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json;charset=UTF-8",
+              "X-CSRFToken": csrftoken,
+            },
+          }
+        )
+        .then(function (response) {
+          console.log(response);
+          return response;
+        })
+        .catch(function (error) {
+          console.log(error);
+          return error;
+        });
     },
   },
 };

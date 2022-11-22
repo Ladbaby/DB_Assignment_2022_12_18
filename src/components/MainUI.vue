@@ -47,7 +47,6 @@
     <Transition name="add-item-up">
       <el-container id="add-div" v-if="currentTab == 'upload'">
         <el-header height="90px">
-          <!-- <audio :src="src" controls></audio> -->
           <el-steps
             :active="stepActive"
             finish-status="success"
@@ -185,6 +184,13 @@
                     v-show="ifShowAllAlbum"
                     @click="addToCollection(item.id)"
                   />
+                  <el-button
+                    type="danger"
+                    icon="Delete"
+                    circle
+                    v-show="ifDeleteShow"
+                    @click="removeAlbum(item.id)"
+                  />
                 </div>
               </div>
             </el-card>
@@ -250,6 +256,7 @@
             icon="Delete"
             size="large"
             circle
+            @click="showDeleteButton"
             v-if="currentTab == 'main'"
           />
         </Transition>
@@ -300,6 +307,7 @@ export default {
       src: "",
       searchCat: "All",
       searchInput: "",
+      ifDeleteShow: false,
     };
   },
   watch: {
@@ -473,6 +481,7 @@ export default {
     },
     async handleStar() {
       this.ifShowAllAlbum = !this.ifShowAllAlbum;
+      this.ifDeleteShow = false;
       if (this.ifShowAllAlbum) {
         var csrftoken = Cookies.get("csrftoken");
         let showCollectionResult = await axios
@@ -537,15 +546,18 @@ export default {
         ElMessage.error("Request fail!");
       }
     },
-    handleSearch() {
+    async handleSearch() {
       if (this.searchCat == "Artist") {
-        this.searchArtist(this.searchInput);
-      } else if (this.searchCat == "Artist") {
-        this.searchAlbum(this.searchInput);
-      }
-      else if (this.searchCat == "All") {
-        this.searchArtist(this.searchInput);
-        this.searchAlbum(this.searchInput);
+        this.musicList = await this.searchArtist(this.searchInput);
+      } else if (this.searchCat == "Album") {
+        this.musicList = await this.searchAlbum(this.searchInput);
+      } else if (this.searchCat == "All") {
+        this.musicList = await this.searchArtist(this.searchInput);
+        this.musicList = this.musicList.concat(
+          await this.searchAlbum(this.searchInput)
+        );
+      } else {
+        console.log("wtf");
       }
     },
     async searchArtist(artistName) {
@@ -596,6 +608,96 @@ export default {
       } else {
         ElMessage.error("Search fail!");
         return [];
+      }
+    },
+    showDeleteButton() {
+      if (this.ifShowAllAlbum && !this.isAdmin) {
+        console.log("wtf");
+      } else {
+        this.ifDeleteShow = !this.ifDeleteShow;
+      }
+    },
+    async removeAlbum(id) {
+      const messageResult = await ElMessageBox.confirm(
+        "Confirm to remove the Album?",
+        "Warning",
+        {
+          confirmButtonText: "OK",
+          cancelButtonText: "Cancel",
+          type: "warning",
+        }
+      )
+        .then(() => {
+          return "success";
+        })
+        .catch(() => {
+          return "failure";
+        });
+      var csrftoken = Cookies.get("csrftoken");
+      if (messageResult == "success") {
+        let removeResult = 0;
+        if (!this.isAdmin || (this.isAdmin && !this.ifShowAllAlbum)) {
+          removeResult = await axios
+            .post(
+              "remove-album/",
+              {
+                id: id,
+              },
+              {
+                headers: {
+                  "Content-Type": "application/json;charset=UTF-8",
+                  "X-CSRFToken": csrftoken,
+                },
+              }
+            )
+            .then(function (response) {
+              console.log(response);
+              return response;
+            })
+            .catch(function (error) {
+              console.log(error);
+              return error;
+            });
+        } else {
+          removeResult = await axios
+            .post(
+              "admin/remove/",
+              {
+                id: id,
+              },
+              {
+                headers: {
+                  "Content-Type": "application/json;charset=UTF-8",
+                  "X-CSRFToken": csrftoken,
+                },
+              }
+            )
+            .then(function (response) {
+              console.log(response);
+              return response;
+            })
+            .catch(function (error) {
+              console.log(error);
+              return error;
+            });
+        }
+        let statusCode = removeResult["status"];
+        if (statusCode == "200") {
+          this.ifShowAllAlbum = false;
+          this.ifDeleteShow = false;
+          this.showCollection();
+          ElMessage({
+            type: "success",
+            message: "Successfully remove the album",
+          });
+        } else {
+          ElMessage.error("Fail to remove the album!");
+        }
+      } else {
+        ElMessage({
+          type: "info",
+          message: "Canceled",
+        });
       }
     },
   },
