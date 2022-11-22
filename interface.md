@@ -79,8 +79,8 @@ GET '/search-artist?target=artist-name'
                 {"trackID" : "xxx", "trackName" : "xxx"}
             ],
             "comments": [
-                {"userID": "xxx", "comment": "xxx"},
-                {"userID": "xxx", "comment": "xxx"}
+                {"userID": "xxx", "userName": "xxx", "comment": "xxx"},
+                {"userID": "xxx", "userName": "xxx", "comment": "xxx"}
             ]
         },
         ......
@@ -115,8 +115,8 @@ GET 'search-album-id/'
                 {"trackID" : "xxx", "trackName" : "xxx"}
             ],
             "comments": [
-                {"userID": "xxx", "comment": "xxx"},
-                {"userID": "xxx", "comment": "xxx"}
+                {"userID": "xxx", "userName": "xxx", "comment": "xxx"},
+                {"userID": "xxx", "userName": "xxx", "comment": "xxx"}
             ]
         },
         ......
@@ -152,8 +152,8 @@ GET '/search-album-name?target=album-name'
                 {"trackID" : "xxx", "trackName" : "xxx"}
             ],
             "comments": [
-                {"userID": "xxx", "comment": "xxx"},
-                {"userID": "xxx", "comment": "xxx"}
+                {"userID": "xxx", "userName": "xxx", "comment": "xxx"},
+                {"userID": "xxx", "userName": "xxx", "comment": "xxx"}
             ]
         },
     ......
@@ -187,8 +187,8 @@ GET 'check-collection/'
                 {"trackID" : "xxx", "trackName" : "xxx"}
             ],
             "comments": [
-                {"userID": "xxx", "comment": "xxx"},
-                {"userID": "xxx", "comment": "xxx"}
+                {"userID": "xxx", "userName": "xxx", "comment": "xxx"},
+                {"userID": "xxx", "userName": "xxx", "comment": "xxx"}
             ]
         },
         ......
