@@ -15,6 +15,29 @@
           </template>
         </el-card>
       </div>
+      <el-input
+        v-model="newComment"
+        maxlength="30"
+        placeholder="Comment here"
+        show-word-limit
+      >
+        <template #append>
+          <el-button @click="sendComment"
+            ><el-icon><Promotion /></el-icon
+          ></el-button>
+        </template>
+      </el-input>
+      <el-timeline>
+        <el-timeline-item
+          v-for="(comment, index) in commentList"
+          :key="index"
+          type="primary"
+          hollow="true"
+        >
+          {{ comment.comment }}
+        </el-timeline-item>
+      </el-timeline>
+      <el-backtop :right="100" :bottom="100" />
     </el-main>
     <el-footer>
       <audio class="audio" :src="url" controls @play="recordLastPlay"></audio>
@@ -34,15 +57,16 @@ export default {
   data() {
     return {
       url: "",
-      id: "",
+      trackID: "",
+      newComment: "",
     };
   },
   methods: {
-    async handlePlay(id) {
-      this.id = id;
+    async handlePlay(trackID) {
+      this.trackID = trackID;
       var csrftoken = Cookies.get("csrftoken");
       let playResult = await axios
-        .get("play/?target=" + id, {
+        .get("play/?target=" + trackID, {
           headers: {
             "Content-Type": "application/json;charset=UTF-8",
             "X-CSRFToken": csrftoken,
@@ -68,13 +92,13 @@ export default {
     },
     recordLastPlay() {
       let time = Date.now();
-      let id = this.id
+      let trackID = this.trackID;
       var csrftoken = Cookies.get("csrftoken");
       axios
         .post(
           "track-lastplay/",
           {
-            id: id,
+            id: trackID,
             time: time,
           },
           {
@@ -92,6 +116,43 @@ export default {
           console.log(error);
           return error;
         });
+    },
+    async sendComment() {
+      let id = this.album.id;
+      let comment = this.newComment;
+      var csrftoken = Cookies.get("csrftoken");
+      let commentResult = await axios
+        .post(
+          "comment/",
+          {
+            id: id,
+            comment: comment,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json;charset=UTF-8",
+              "X-CSRFToken": csrftoken,
+            },
+          }
+        )
+        .then(function (response) {
+          console.log(response);
+          return response;
+        })
+        .catch(function (error) {
+          console.log(error);
+          return error;
+        });
+      let statusCode = commentResult["status"];
+      if (statusCode == "200") {
+        ElMessage({
+          type: "success",
+          message: "Comment sent",
+        });
+        this.newComment = "";
+      } else {
+        ElMessage.error("Fail to send the comment!");
+      }
     },
   },
 };

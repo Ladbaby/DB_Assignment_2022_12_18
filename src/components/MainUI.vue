@@ -209,7 +209,7 @@
     </Transition>
   </div>
   <Transition name="add-item-up">
-    <div id="tool-bar" v-if="currentTab == 'main'">
+    <div id="tool-bar" v-if="currentTab == 'main' && ifShowAlbumDetail == false">
       <!-- <Transition name="tool-bar-transition"> -->
       <el-space direction="vertical">
         <Transition name="tool-bar-transition">
@@ -218,28 +218,25 @@
             size="large"
             circle
             @click="showSearchBox"
-            v-if="currentTab == 'main'"
           />
         </Transition>
-        <Transition name="tool-bar-transition">
+        <!-- <Transition name="tool-bar-transition">
           <el-button
             type="primary"
             icon="Edit"
             size="large"
             circle
-            v-if="currentTab == 'main'"
           />
-        </Transition>
-        <Transition name="tool-bar-transition">
+        </Transition> -->
+        <!-- <Transition name="tool-bar-transition">
           <el-button
             type="success"
             icon="Check"
             size="large"
             circle
             @click="handleCheck"
-            v-if="currentTab == 'upload'"
           />
-        </Transition>
+        </Transition> -->
         <Transition name="tool-bar-transition">
           <el-button
             type="warning"
@@ -247,7 +244,6 @@
             size="large"
             circle
             @click="handleStar"
-            v-if="currentTab == 'main'"
           />
         </Transition>
         <Transition name="tool-bar-transition">
@@ -257,7 +253,6 @@
             size="large"
             circle
             @click="showDeleteButton"
-            v-if="currentTab == 'main'"
           />
         </Transition>
       </el-space>
