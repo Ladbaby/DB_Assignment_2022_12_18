@@ -631,21 +631,31 @@ def upload_utility(request, if_admin):
             md5 = hashlib.md5()
             md5.update(file_content)
             track_ID = md5.hexdigest()
-            new_file_path = os.path.join(os.path.join(current_path, "music"), track_ID+".mp3")
-            with open(new_file_path, 'wb') as newfile:
-                newfile.write(file_content)
 
-            audio = MP3(track_file)
-            track_length = audio.info.length
-            # insert into table track
-            with connection.cursor() as cursor:
-                sql = """INSERT INTO Track(trackID, trackName, trackLength, trackIndex, albumID)
-                VALUES (%s, %s, %s, %s, %s)"""
-                try:
-                    cursor.execute(sql, [track_ID, track_name, track_length, track_index, album_ID])
-                except sqlite3.Error as er:
-                    print("upload album, insert track fail")
-                    return HttpResponse(status = 400)
-            track_index+=1
+            with connection.cursor() as check_existence:
+                sql = """SELECT * FROM Track WHERE trackID = %s"""
+                existence = check_existence.execute(sql, [track_ID,]).fetchall()
+
+            if not existence:
+                new_file_path = os.path.join(os.path.join(current_path, "music"), track_ID+".mp3")
+                with open(new_file_path, 'wb') as newfile:
+                    newfile.write(file_content)
+
+                audio = MP3(track_file)
+                track_length = audio.info.length
+                # insert into table track
+                with connection.cursor() as cursor:
+                    sql = """INSERT INTO Track(trackID, trackName, trackLength, trackIndex, albumID)
+                    VALUES (%s, %s, %s, %s, %s)"""
+                    try:
+                        cursor.execute(sql, [track_ID, track_name, track_length, track_index, album_ID])
+                    except sqlite3.Error as er:
+                        print("upload album, insert track fail")
+                        return HttpResponse(status = 400)
+                track_index+=1
+            else:
+                pass
+            
+
     
     return HttpResponse(status = 200)
