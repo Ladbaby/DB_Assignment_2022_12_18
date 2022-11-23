@@ -161,37 +161,35 @@
           >
             <el-card
               :body-style="{ padding: '5px' }"
-              :style="{
-                borderRadius: '10px',
-              }"
+              style="borderRadius: 10px; width: 100%"
               shadow="always"
               round
             >
-              <img
+              <!-- <img
                 src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
                 class="image"
-              />
+              /> -->
               <div style="padding: 14px">
-                <span style="overflow-wrap: anywhere">{{ item["name"] }}</span>
+                <span style="font-size: 24px; font-weight: 600;">{{ item["name"] }}</span>
                 <div class="bottom">
                   <span
                     ><small>{{ item["artist"] }}</small></span
                   >
-                  <el-button
-                    type="warning"
-                    icon="Star"
-                    circle
-                    v-show="ifShowAllAlbum"
-                    @click="addToCollection(item.id)"
-                  />
-                  <el-button
-                    type="danger"
-                    icon="Delete"
-                    circle
-                    v-show="ifDeleteShow"
-                    @click="removeAlbum(item.id)"
-                  />
                 </div>
+                <el-button
+                  type="warning"
+                  icon="Star"
+                  circle
+                  v-show="ifShowAllAlbum"
+                  @click="addToCollection(item.id)"
+                />
+                <el-button
+                  type="danger"
+                  icon="Delete"
+                  circle
+                  v-show="ifDeleteShow"
+                  @click="removeAlbum(item.id)"
+                />
               </div>
             </el-card>
           </li>
@@ -1039,11 +1037,13 @@ input.search-box-input:focus {
   margin: 20px;
   transition: box-shadow 0.2s, transform 0.2s;
   border-radius: 10px;
+  width: calc(100% - 40px);
+  text-align: left;
 }
 .music-card:hover {
   box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 5px 8px 0 rgba(0, 0, 0, 0.14),
     0 1px 14px 0 rgba(0, 0, 0, 0.5) !important;
-  transform: scale(1.03) perspective(0px);
+  transform: scale(1.01) perspective(0px);
 }
 #top-bar {
   position: fixed;

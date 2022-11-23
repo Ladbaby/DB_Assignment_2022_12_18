@@ -45,12 +45,13 @@
         >
           User ID {{ item.userID }}: {{ item.comment }}
         </el-timeline-item>
+        <el-empty v-if="album.comments.length == 0" description="no comment" />
       </el-timeline>
       </div>
     </el-main>
-    <el-affix offset="20" position="bottom">
+    <!-- <el-affix offset="20" position="bottom"> -->
       <audio class="audio" :src="url" controls @play="recordLastPlay" autoplay="true"></audio>
-    </el-affix>
+    <!-- </el-affix> -->
     <el-backtop :right="100" :bottom="100" />
   </el-container>
 </template>
@@ -220,12 +221,15 @@ export default {
   font-size: 18px;
 }
 #comment-div {
-  background-color: hsla(0, 0%, 100%, 0.8) !important;
+  background-color: hsla(0, 0%, 100%, 0.9) !important;
   border-radius: 10px;
   padding: 15px;
   margin-top: 10px;
 }
 .audio {
   width: 95%;
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
 }
 </style>
