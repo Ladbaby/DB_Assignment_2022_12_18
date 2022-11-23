@@ -29,12 +29,12 @@
       </el-input>
       <el-timeline>
         <el-timeline-item
-          v-for="(comment, index) in commentList"
+          v-for="(item, index) in album.comments"
           :key="index"
           type="primary"
           hollow="true"
         >
-          {{ comment.comment }}
+          {{ item.comment }}
         </el-timeline-item>
       </el-timeline>
       <el-backtop :right="100" :bottom="100" />

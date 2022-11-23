@@ -397,9 +397,6 @@ export default {
           });
         var csrftoken = Cookies.get("csrftoken");
         if (messageResult == "success") {
-          // let name = this.uploadAlbumName;
-          // let artist = this.uploadArtistName;
-          // let fileList = this.fileList;
           const formData = new FormData();
           formData.append("name", this.uploadAlbumName);
           formData.append("artist", this.uploadArtistName);
@@ -407,9 +404,10 @@ export default {
             formData.append(this.fileList[i].name, this.fileList[i].raw);
           }
 
+          let url = this.isAdmin? "admin/upload/": "upload/";
           const submitResult = await axios({
             method: "post",
-            url: "upload/",
+            url: url,
             data: formData,
             headers: {
               "Content-Type": "multipart/form-data",
@@ -630,52 +628,28 @@ export default {
         });
       var csrftoken = Cookies.get("csrftoken");
       if (messageResult == "success") {
-        let removeResult = 0;
-        if (!this.isAdmin || (this.isAdmin && !this.ifShowAllAlbum)) {
-          removeResult = await axios
-            .post(
-              "remove-album/",
-              {
-                id: id,
+        let url = (!this.isAdmin || (this.isAdmin && !this.ifShowAllAlbum))? "remove-album/": "admin/remove/";
+        let removeResult = await axios
+          .post(
+            url,
+            {
+              id: id,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json;charset=UTF-8",
+                "X-CSRFToken": csrftoken,
               },
-              {
-                headers: {
-                  "Content-Type": "application/json;charset=UTF-8",
-                  "X-CSRFToken": csrftoken,
-                },
-              }
-            )
-            .then(function (response) {
-              console.log(response);
-              return response;
-            })
-            .catch(function (error) {
-              console.log(error);
-              return error;
-            });
-        } else {
-          removeResult = await axios
-            .post(
-              "admin/remove/",
-              {
-                id: id,
-              },
-              {
-                headers: {
-                  "Content-Type": "application/json;charset=UTF-8",
-                  "X-CSRFToken": csrftoken,
-                },
-              }
-            )
-            .then(function (response) {
-              console.log(response);
-              return response;
-            })
-            .catch(function (error) {
-              console.log(error);
-              return error;
-            });
-        }
+            }
+          )
+          .then(function (response) {
+            console.log(response);
+            return response;
+          })
+          .catch(function (error) {
+            console.log(error);
+            return error;
+          });
         let statusCode = removeResult["status"];
         if (statusCode == "200") {
           this.ifShowAllAlbum = false;
