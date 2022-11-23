@@ -568,6 +568,30 @@ def check_album_utility(album_id_list):
 @csrf_exempt
 def upload_utility(request, if_admin):
 
+    #check if upload tracks already exist
+
+    for track in request.FILES.lists():
+        try:
+            track_name = track[0]
+            track_files = track[1]
+        except KeyError:
+            return HttpResponse(stauts = 400)
+
+        for track_file in track_files:
+            file_content = track_file.read()
+            md5 = hashlib.md5()
+            md5.update(file_content)
+            track_ID = md5.hexdigest()
+
+            with connection.cursor() as cursor:
+                sql = """SELECT * FROM Track Where TrackID = %s"""
+                result = cursor.execute(sql, [track_ID,]).fetchall()
+
+                if not result:
+                    pass
+                else:
+                    return HttpResponse(status = 400)
+
     grant = 0
     if if_admin:
         grant = 1
