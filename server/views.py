@@ -141,7 +141,10 @@ def search_albumID(request):
         album_id = request.GET.get('target')
         albumID = []
         if album_id is not None:
-            albumID.append(album_id)
+            if album_id == '':
+                return HttpResponse(status = 400)
+            else:
+                albumID.append(album_id)
         else:
             with connection.cursor() as cursor:
                 sql = """SELECT albumID from Album Where Album.granted = 1"""
@@ -415,6 +418,16 @@ def admin_remove(request):
             except KeyError:
                 return HttpResponse(status = 400)
 
+            with connection.cursor() as remove_track:
+                sql = """SELECT trackID FROM Track Where albumID = %s"""
+
+                result = remove_track.execute(sql, [album_ID,])
+
+                for row in result:
+                    track_id = row[0]
+                    file_path = os.path.join(os.path.join(os.path.join(BASE_DIR, "server"), "music"), track_id+".mp3")
+                    os.remove(file_path)
+
             with connection.cursor() as cursor:
                 sql = """DELETE FROM Album WHERE albumID=%s"""
 
@@ -632,30 +645,22 @@ def upload_utility(request, if_admin):
             md5.update(file_content)
             track_ID = md5.hexdigest()
 
-            with connection.cursor() as check_existence:
-                sql = """SELECT * FROM Track WHERE trackID = %s"""
-                existence = check_existence.execute(sql, [track_ID,]).fetchall()
+            new_file_path = os.path.join(os.path.join(current_path, "music"), track_ID+".mp3")
+            with open(new_file_path, 'wb') as newfile:
+                newfile.write(file_content)
 
-            if not existence:
-                new_file_path = os.path.join(os.path.join(current_path, "music"), track_ID+".mp3")
-                with open(new_file_path, 'wb') as newfile:
-                    newfile.write(file_content)
-
-                audio = MP3(track_file)
-                track_length = audio.info.length
-                # insert into table track
-                with connection.cursor() as cursor:
-                    sql = """INSERT INTO Track(trackID, trackName, trackLength, trackIndex, albumID)
-                    VALUES (%s, %s, %s, %s, %s)"""
-                    try:
-                        cursor.execute(sql, [track_ID, track_name, track_length, track_index, album_ID])
-                    except sqlite3.Error as er:
-                        print("upload album, insert track fail")
-                        return HttpResponse(status = 400)
-                track_index+=1
-            else:
-                pass
-            
+            audio = MP3(track_file)
+            track_length = audio.info.length
+            # insert into table track
+            with connection.cursor() as cursor:
+                sql = """INSERT INTO Track(trackID, trackName, trackLength, trackIndex, albumID)
+                VALUES (%s, %s, %s, %s, %s)"""
+                try:
+                    cursor.execute(sql, [track_ID, track_name, track_length, track_index, album_ID])
+                except sqlite3.Error as er:
+                    print("upload album, insert track fail")
+                    return HttpResponse(status = 400)
+            track_index+=1
 
     
     return HttpResponse(status = 200)
