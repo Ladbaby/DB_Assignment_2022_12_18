@@ -196,12 +196,14 @@
             </el-card>
           </li>
         </ul>
-        <div id="album-container" v-if="ifShowAlbumDetail">
-          <AlbumDetail
-            :album="selectedAlbum"
-            @album-detail-return="albumDetailReturn"
-          ></AlbumDetail>
-        </div>
+        <Transition name="add-item-up">
+          <div id="album-container" v-if="ifShowAlbumDetail">
+            <AlbumDetail
+              :album="selectedAlbum"
+              @album-detail-return="albumDetailReturn"
+            ></AlbumDetail>
+          </div>
+        </Transition>
       </div>
       <div id="notification-div" v-else-if="currentTab == 'notification'">
         <NotificationView :isAdmin="isAdmin"></NotificationView>
@@ -209,34 +211,15 @@
     </Transition>
   </div>
   <Transition name="add-item-up">
-    <div id="tool-bar" v-if="currentTab == 'main' && ifShowAlbumDetail == false">
+    <div
+      id="tool-bar"
+      v-if="currentTab == 'main' && ifShowAlbumDetail == false"
+    >
       <!-- <Transition name="tool-bar-transition"> -->
       <el-space direction="vertical">
         <Transition name="tool-bar-transition">
-          <el-button
-            icon="Search"
-            size="large"
-            circle
-            @click="showSearchBox"
-          />
+          <el-button icon="Search" size="large" circle @click="showSearchBox" />
         </Transition>
-        <!-- <Transition name="tool-bar-transition">
-          <el-button
-            type="primary"
-            icon="Edit"
-            size="large"
-            circle
-          />
-        </Transition> -->
-        <!-- <Transition name="tool-bar-transition">
-          <el-button
-            type="success"
-            icon="Check"
-            size="large"
-            circle
-            @click="handleCheck"
-          />
-        </Transition> -->
         <Transition name="tool-bar-transition">
           <el-button
             type="warning"
@@ -404,7 +387,7 @@ export default {
             formData.append(this.fileList[i].name, this.fileList[i].raw);
           }
 
-          let url = this.isAdmin? "admin/upload/": "upload/";
+          let url = this.isAdmin ? "admin/upload/" : "upload/";
           const submitResult = await axios({
             method: "post",
             url: url,
@@ -628,7 +611,10 @@ export default {
         });
       var csrftoken = Cookies.get("csrftoken");
       if (messageResult == "success") {
-        let url = (!this.isAdmin || (this.isAdmin && !this.ifShowAllAlbum))? "remove-album/": "admin/remove/";
+        let url =
+          !this.isAdmin || (this.isAdmin && !this.ifShowAllAlbum)
+            ? "remove-album/"
+            : "admin/remove/";
         let removeResult = await axios
           .post(
             url,
@@ -986,29 +972,6 @@ input.search-box-input:focus {
   height: 100%;
   float: left;
   overflow: visible;
-}
-#user-dropdown {
-  background-color: hsla(0, 0%, 100%, 1) !important;
-  border-radius: 20px;
-  will-change: visibility;
-  position: absolute;
-  z-index: 99;
-  width: 20%;
-  top: 66px;
-  left: 0px;
-  visibility: hidden;
-  opacity: 0;
-  transform: translateY(-4px);
-  transition: opacity 0.25s, visibility 0.25s, transform 0.25s;
-  margin: 0 auto;
-  list-style-type: none;
-  padding: 5px;
-}
-#logo-div:hover #user-dropdown {
-  pointer-events: auto;
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
 }
 #search-select {
   display: flex;

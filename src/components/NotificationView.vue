@@ -3,7 +3,6 @@
     <!-- <el-scrollbar width="100%"> -->
     <el-tabs
       tab-position="left"
-      style="height: 100%; width: 100%"
       class="demo-tabs"
       @tab-change="handleNotification"
     >
@@ -23,7 +22,7 @@
             />
           </el-col>
           <el-col :span="4">
-            <h2>Administrator</h2>
+            <h2 v-if="isAdmin">Administrator</h2>
           </el-col>
         </el-row>
         <hr style="width: 95%" />
@@ -50,6 +49,7 @@
                   </el-card>
                 </el-timeline-item>
               </el-timeline>
+              <el-empty v-if="notificationList.length == 0" description="no notification" />
             </template>
             <template v-else>
               <el-timeline v-for="(item, index) in userUploadList" :key="index">
@@ -87,6 +87,7 @@
                   </el-card>
                 </el-timeline-item>
               </el-timeline>
+              <el-empty v-if="userUploadList.length == 0" description="no notification" />
             </template>
           </div>
         </el-scrollbar>
@@ -191,6 +192,8 @@ export default {
   width: 100%;
   height: 100%;
   display: block !important;
+  /* background-color: hsla(0, 0%, 100%, 1) !important; */
+  border-radius: 10px;
 }
 #notification-aside {
   border-radius: 10px;
@@ -207,11 +210,19 @@ export default {
 }
 #notification-timeline {
   background-color: hsla(0, 0%, 100%, 0.9) !important;
-  padding: 32px;
+  border-radius: 10px;
+  padding: 10px;
 }
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.demo-tabs {
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  padding: 10px;
+  border-radius: 10px;
+  background-color: hsla(0, 0%, 100%, 0.7) !important;
 }
 </style>
