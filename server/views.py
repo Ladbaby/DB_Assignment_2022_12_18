@@ -264,7 +264,7 @@ def play_track(request):
                 if result is None:
                     return HttpResponse(content = "track not exist", status = 400)
 
-                track_url = "/music?s="+result[3]
+                track_url = "/music?s="+result[3]+".mp3"
                 if result[2] is None:
                     lastplay = -1
                 else:
@@ -286,7 +286,6 @@ def send_music(request):
     # if request.user.is_authenticated:
         song_name = request.GET.get('s')
         if song_name is not None:
-            song_name += '.mp3'
             current_path = os.path.dirname(__file__)
             song_path = os.path.join(os.path.join(current_path, "music"), song_name)
             with open(song_path, "rb") as song_file:
