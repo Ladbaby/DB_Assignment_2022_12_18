@@ -664,6 +664,7 @@ def upload_utility(request, if_admin):
 
         for track_file in track_files:
 
+            track_file.seek(0)
             file_content = track_file.read()
             md5 = hashlib.md5()
             md5.update(file_content)
