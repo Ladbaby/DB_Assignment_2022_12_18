@@ -1,6 +1,6 @@
 <template>
   <el-container id="album-container2">
-    <el-affix target="#album-container2">
+    <!-- <el-affix target="#album-container2">
       <el-button
         @click="albumDetailReturn"
         id="album-detail-return"
@@ -8,49 +8,75 @@
         size="large"
         ><h1>Return</h1></el-button
       >
-    </el-affix>
+    </el-affix> -->
     <el-header id="album-detail-header">
-      <h1>{{ this.album.name + "——" + this.album.artist }}</h1>
+      <el-page-header :icon="ArrowLeft" @back="albumDetailReturn">
+        <template #content>
+          <span style="color: white; font-size: 24px;">
+            {{ this.album.name + " " }}
+          </span>
+          <span
+            style="color: white;"
+          >
+            <small>{{ this.album.artist }}</small>
+          </span>
+        </template>
+      </el-page-header>
     </el-header>
     <el-main>
       <div v-for="item in album.tracks" :key="item.trackID" id="list-div">
         <el-card class="box-card">
-            <div class="card-body">
-              <el-button @click="handlePlay(item.trackID)" icon="VideoPlay" size="large" circle type="danger"></el-button>
-              <el-divider direction="vertical" />
-              <span class="track-name">{{ item.trackName }}</span>
-            </div>
+          <div class="card-body">
+            <el-button
+              @click="handlePlay(item.trackID)"
+              icon="CaretRight"
+              size="large"
+              circle
+              type="primary"
+            ></el-button>
+            <el-divider direction="vertical" />
+            <span class="track-name">{{ item.trackName }}</span>
+          </div>
         </el-card>
       </div>
       <div id="comment-div">
-      <el-input
-        v-model="newComment"
-        maxlength="30"
-        placeholder="Comment here"
-        show-word-limit
-        id="comment-input"
-      >
-        <template #append>
-          <el-button @click="sendComment"
-            ><el-icon><Promotion /></el-icon
-          ></el-button>
-        </template>
-      </el-input>
-      <el-timeline id="comment-timeline">
-        <el-timeline-item
-          v-for="(item, index) in album.comments"
-          :key="index"
-          type="primary"
-          hollow="true"
+        <el-input
+          v-model="newComment"
+          maxlength="30"
+          placeholder="Comment here"
+          show-word-limit
+          id="comment-input"
         >
-          User ID {{ item.userID }}: {{ item.comment }}
-        </el-timeline-item>
-        <el-empty v-if="album.comments.length == 0" description="no comment" />
-      </el-timeline>
+          <template #append>
+            <el-button @click="sendComment"
+              ><el-icon><Promotion /></el-icon
+            ></el-button>
+          </template>
+        </el-input>
+        <el-timeline id="comment-timeline">
+          <el-timeline-item
+            v-for="(item, index) in album.comments"
+            :key="index"
+            type="primary"
+            hollow="true"
+          >
+            {{ item.userName }}: {{ item.comment }}
+          </el-timeline-item>
+          <el-empty
+            v-if="album.comments.length == 0"
+            description="No Comment"
+          />
+        </el-timeline>
       </div>
     </el-main>
     <!-- <el-affix offset="20" position="bottom"> -->
-      <audio class="audio" :src="url" controls @play="recordLastPlay" autoplay="true"></audio>
+    <audio
+      class="audio"
+      :src="url"
+      controls
+      @play="recordLastPlay"
+      autoplay="true"
+    ></audio>
     <!-- </el-affix> -->
     <el-backtop :right="100" :bottom="100" />
   </el-container>
@@ -183,11 +209,13 @@ export default {
   left: 0px;
   z-index: 98;
   background-color: hsla(0, 0%, 100%, 0) !important;
+  color: white;
   border: 0;
 }
 #album-detail-header {
-  text-align: center;
-  background-color: hsla(0, 0%, 100%, 0.8) !important;
+  background-color: #4893e0 !important;
+  color: white !important;
+  /* background-color: hsla(0, 0%, 100%, 0.8) !important; */
   border-radius: 10px;
 }
 #list-div {

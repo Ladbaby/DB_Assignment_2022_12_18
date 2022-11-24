@@ -75,9 +75,7 @@
                 Drop file here or <em>click to upload</em>
               </div>
               <template #tip>
-                <div class="el-upload__tip">
-                  upload tracks
-                </div>
+                <div class="el-upload__tip">upload tracks</div>
               </template>
             </el-upload>
             <div v-else-if="stepActive == 1" id="upload-artist-div">
@@ -152,48 +150,52 @@
         </el-footer>
       </el-container>
       <div id="music-list-div" v-else-if="currentTab == 'main'">
-        <ul id="music-list-ul">
-          <li
-            class="music-card"
-            v-for="item in musicList"
-            :key="item"
-            @click="handleAlbumClicked(item)"
-          >
-            <el-card
-              :body-style="{ padding: '5px' }"
-              style="borderRadius: 10px; width: 100%"
-              shadow="always"
-              round
+        <el-container id="album-container-outer">
+          <el-header id="album-container-outer-header">
+              <div style="height: 100%; padding: 10px;">{{ this.headerName }}</div>
+          </el-header>
+          <el-scrollbar>
+          <div id="music-list-ul">
+            <span
+              class="music-card"
+              v-for="item in musicList"
+              :key="item"
+              @click="handleAlbumClicked(item)"
             >
-              <!-- <img
-                src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
-                class="image"
-              /> -->
-              <div style="padding: 14px">
-                <span style="font-size: 24px; font-weight: 600;">{{ item["name"] }}</span>
-                <div class="bottom">
-                  <span
-                    ><small>{{ item["artist"] }}</small></span
-                  >
-                </div>
-                <el-button
-                  type="warning"
-                  icon="Star"
-                  circle
-                  v-show="ifShowAllAlbum"
-                  @click="addToCollection(item.id)"
-                />
-                <el-button
-                  type="danger"
-                  icon="Delete"
-                  circle
-                  v-show="ifDeleteShow"
-                  @click="removeAlbum(item.id)"
-                />
-              </div>
-            </el-card>
-          </li>
-        </ul>
+              <el-card
+                :body-style="{ padding: '5px' }"
+                style="borderRadius: 10px;width: 100%;display: flex;justify-content: space-between;align-items: center;"
+                shadow="always"
+                round
+              >
+                <template #header>
+                  <span style="font-size: 24px; font-weight: 600"
+                    >{{ item["name"] + " " }}
+                  </span>
+                  <small>{{ item["artist"] }}</small>
+                  <span style="position: absolute; right: 20px">
+                    <el-button
+                      type="warning"
+                      icon="Star"
+                      circle
+                      v-show="ifShowAllAlbum"
+                      @click="addToCollection(item.id)"
+                    />
+                    <el-button
+                      type="danger"
+                      icon="Delete"
+                      circle
+                      v-show="ifDeleteShow"
+                      @click="removeAlbum(item.id)"
+                    />
+                  </span>
+                </template>
+              </el-card>
+            </span>
+            <el-empty v-if="musicList.length == 0"/>
+          </div>
+          </el-scrollbar>
+        </el-container>
         <Transition name="add-item-up">
           <div id="album-container" v-if="ifShowAlbumDetail">
             <AlbumDetail
@@ -227,7 +229,7 @@
             @click="handleStar"
           />
         </Transition>
-        <Transition name="tool-bar-transition">
+        <Transition name="tool-bar-transition" v-if="!(!isAdmin && ifShowAllAlbum)">
           <el-button
             type="danger"
             icon="Delete"
@@ -270,7 +272,7 @@ export default {
           name: "test",
           artist: "?",
           tracks: [{ trackID: "1", trackName: "hello" }],
-          comments: [{ userID: "1", comment: "wtf" }],
+          comments: [{ userID: "1", userName: "Cook", comment: "wtf" }],
         },
       ],
       fileList: [],
@@ -284,6 +286,7 @@ export default {
       searchCat: "All",
       searchInput: "",
       ifDeleteShow: false,
+      headerName: "Personal Collection", // Personal Collection, All Albums
     };
   },
   watch: {
@@ -454,6 +457,12 @@ export default {
       this.ifShowAlbumDetail = true;
     },
     async handleStar() {
+      if (this.headerName == "Personal Collection") {
+        this.headerName = "All Albums";
+      }
+      else {
+        this.headerName = "Personal Collection";
+      }
       this.ifShowAllAlbum = !this.ifShowAllAlbum;
       this.ifDeleteShow = false;
       if (this.ifShowAllAlbum) {
@@ -1031,9 +1040,12 @@ input.search-box-input:focus {
 #music-list-ul {
   padding: 0;
   padding-top: 80px;
+  height: calc(100% - 112px);
 }
 .music-card {
-  display: inline-block;
+  background-color: hsla(0, 0%, 100%, 0.9) !important;
+  backdrop-filter: blur(5px);
+  display: block;
   margin: 20px;
   transition: box-shadow 0.2s, transform 0.2s;
   border-radius: 10px;
@@ -1127,6 +1139,19 @@ input.input:focus {
   backdrop-filter: blur(5px);
   transition: all 0.5s ease-in-out;
 }
+#album-container-outer {
+  width: calc(100% - 20px);
+  height: calc(100% - 86px);
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background-color: hsla(0, 0%, 100%, 0.3) !important;
+  box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 5px 8px 0 rgb(0 0 0 / 14%),
+    0 1px 14px 0 rgb(0 0 0 / 12%) !important;
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+  transition: all 0.5s ease-in-out;
+}
 .buttom {
   margin-top: 13px;
   line-height: 12px;
@@ -1147,5 +1172,13 @@ input.input:focus {
   border-radius: 10px;
   backdrop-filter: blur(5px);
   transition: all 0.5s ease-in-out;
+}
+#album-container-outer-header {
+  background-color: #7b7b7b !important;
+  color: white !important;
+  font-size: 28px;
+  font-weight: 500;
+  border-radius: 10px;
+  align-items: center;
 }
 </style>
