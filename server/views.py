@@ -261,7 +261,7 @@ def play_track(request):
                 FROM Track WHERE Track.trackID = %s"""
                 result = cursor.execute(sql, [track_id,]).fetchone()
 
-                if result is None:
+                if not any(result):
                     return HttpResponse(content = "track not exist", status = 400)
 
                 track_url = "/music?s="+result[3]+".mp3"
@@ -347,7 +347,7 @@ def comment(request):
         with connection.cursor() as cursor:
             sql = """SELECT MAX(commentID) FROM Comment"""
             current_id = cursor.execute(sql).fetchone()
-            if current_id is None:
+            if not any(current_id):
                 comment_id = 1
             else:
                 comment_id = current_id[0] + 1
@@ -614,7 +614,7 @@ def upload_utility(request, if_admin):
 
             with connection.cursor() as cursor_get_id:
                 max_artistID = cursor_get_id.execute("SELECT MAX(artistID) FROM Artist").fetchone()
-                if max_artistID is None:
+                if not any(max_artistID):
                     artist_ID = 1
                 else:
                     artist_ID = int(max_artistID[0]) + 1
@@ -636,7 +636,7 @@ def upload_utility(request, if_admin):
     # insert into table album
     with connection.cursor() as cursor:
         max_albumID = cursor.execute("SELECT MAX(albumID) FROM Album").fetchone()
-        if max_albumID is None:
+        if not any(max_albumID):
             album_ID = 1
         else:
             album_ID = int(max_albumID[0]) + 1
