@@ -36,7 +36,9 @@
           </el-select>
         </template>
         <template #append>
-          <el-button @click="handleSearch"><el-icon><Search/></el-icon></el-button>
+          <el-button @click="handleSearch"
+            ><el-icon><Search /></el-icon
+          ></el-button>
         </template>
       </el-input>
     </transition>
@@ -45,7 +47,6 @@
     <Transition name="add-item-up">
       <el-container id="add-div" v-if="currentTab == 'upload'">
         <el-header height="90px">
-          <!-- <audio :src="src" controls></audio> -->
           <el-steps
             :active="stepActive"
             finish-status="success"
@@ -74,9 +75,7 @@
                 Drop file here or <em>click to upload</em>
               </div>
               <template #tip>
-                <div class="el-upload__tip">
-                  jpg/png files with a size less than 500kb
-                </div>
+                <div class="el-upload__tip">upload tracks</div>
               </template>
             </el-upload>
             <div v-else-if="stepActive == 1" id="upload-artist-div">
@@ -151,49 +150,60 @@
         </el-footer>
       </el-container>
       <div id="music-list-div" v-else-if="currentTab == 'main'">
-        <ul id="music-list-ul">
-          <li
-            class="music-card"
-            v-for="item in musicList"
-            :key="item"
-            @click="handleAlbumClicked(item)"
-          >
-            <el-card
-              :body-style="{ padding: '5px' }"
-              :style="{
-                borderRadius: '10px',
-              }"
-              shadow="always"
-              round
+        <el-container id="album-container-outer">
+          <el-header id="album-container-outer-header">
+              <div style="height: 100%; padding: 10px;">{{ this.headerName }}</div>
+          </el-header>
+          <el-scrollbar>
+          <div id="music-list-ul">
+            <span
+              class="music-card"
+              v-for="item in musicList"
+              :key="item"
+              @click="handleAlbumClicked(item)"
             >
-              <img
-                src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
-                class="image"
-              />
-              <div style="padding: 14px">
-                <span style="overflow-wrap: anywhere">{{ item["name"] }}</span>
-                <div class="bottom">
-                  <span
-                    ><small>{{ item["artist"] }}</small></span
-                  >
-                  <el-button
-                    type="warning"
-                    icon="Star"
-                    circle
-                    v-show="ifShowAllAlbum"
-                    @click="addToCollection(item.id)"
-                  />
-                </div>
-              </div>
-            </el-card>
-          </li>
-        </ul>
-        <div id="album-container" v-if="ifShowAlbumDetail">
-          <AlbumDetail
-            :album="selectedAlbum"
-            @album-detail-return="albumDetailReturn"
-          ></AlbumDetail>
-        </div>
+              <el-card
+                :body-style="{ padding: '5px' }"
+                style="borderRadius: 10px;width: 100%;display: flex;justify-content: space-between;align-items: center;"
+                shadow="always"
+                round
+              >
+                <template #header>
+                  <span style="font-size: 24px; font-weight: 600"
+                    >{{ item["name"] + " " }}
+                  </span>
+                  <small>{{ item["artist"] }}</small>
+                  <span style="position: absolute; right: 20px">
+                    <el-button
+                      type="warning"
+                      icon="Star"
+                      circle
+                      v-show="ifShowAllAlbum"
+                      @click="addToCollection(item.id)"
+                    />
+                    <el-button
+                      type="danger"
+                      icon="Delete"
+                      circle
+                      v-show="ifDeleteShow"
+                      @click="removeAlbum(item.id)"
+                    />
+                  </span>
+                </template>
+              </el-card>
+            </span>
+            <el-empty v-if="musicList.length == 0"/>
+          </div>
+          </el-scrollbar>
+        </el-container>
+        <Transition name="add-item-up">
+          <div id="album-container" v-if="ifShowAlbumDetail">
+            <AlbumDetail
+              :album="selectedAlbum"
+              @album-detail-return="albumDetailReturn"
+            ></AlbumDetail>
+          </div>
+        </Transition>
       </div>
       <div id="notification-div" v-else-if="currentTab == 'notification'">
         <NotificationView :isAdmin="isAdmin"></NotificationView>
@@ -201,36 +211,14 @@
     </Transition>
   </div>
   <Transition name="add-item-up">
-    <div id="tool-bar" v-if="currentTab == 'main'">
+    <div
+      id="tool-bar"
+      v-if="currentTab == 'main' && ifShowAlbumDetail == false"
+    >
       <!-- <Transition name="tool-bar-transition"> -->
       <el-space direction="vertical">
         <Transition name="tool-bar-transition">
-          <el-button
-            icon="Search"
-            size="large"
-            circle
-            @click="showSearchBox"
-            v-if="currentTab == 'main'"
-          />
-        </Transition>
-        <Transition name="tool-bar-transition">
-          <el-button
-            type="primary"
-            icon="Edit"
-            size="large"
-            circle
-            v-if="currentTab == 'main'"
-          />
-        </Transition>
-        <Transition name="tool-bar-transition">
-          <el-button
-            type="success"
-            icon="Check"
-            size="large"
-            circle
-            @click="handleCheck"
-            v-if="currentTab == 'upload'"
-          />
+          <el-button icon="Search" size="large" circle @click="showSearchBox" />
         </Transition>
         <Transition name="tool-bar-transition">
           <el-button
@@ -239,16 +227,15 @@
             size="large"
             circle
             @click="handleStar"
-            v-if="currentTab == 'main'"
           />
         </Transition>
-        <Transition name="tool-bar-transition">
+        <Transition name="tool-bar-transition" v-if="!(!isAdmin && ifShowAllAlbum)">
           <el-button
             type="danger"
             icon="Delete"
             size="large"
             circle
-            v-if="currentTab == 'main'"
+            @click="showDeleteButton"
           />
         </Transition>
       </el-space>
@@ -285,7 +272,7 @@ export default {
           name: "test",
           artist: "?",
           tracks: [{ trackID: "1", trackName: "hello" }],
-          comments: [{ userID: "1", comment: "wtf" }],
+          comments: [{ userID: "1", userName: "Cook", comment: "wtf" }],
         },
       ],
       fileList: [],
@@ -298,6 +285,8 @@ export default {
       src: "",
       searchCat: "All",
       searchInput: "",
+      ifDeleteShow: false,
+      headerName: "Personal Collection", // Personal Collection, All Albums
     };
   },
   watch: {
@@ -350,7 +339,7 @@ export default {
     showSearchBox() {
       this.ifSearchShow = !this.ifSearchShow;
       if (!this.ifSearchShow) {
-        this.showCollection()
+        this.showCollection();
       }
     },
     handleChange(uploadFile) {
@@ -392,9 +381,6 @@ export default {
           });
         var csrftoken = Cookies.get("csrftoken");
         if (messageResult == "success") {
-          // let name = this.uploadAlbumName;
-          // let artist = this.uploadArtistName;
-          // let fileList = this.fileList;
           const formData = new FormData();
           formData.append("name", this.uploadAlbumName);
           formData.append("artist", this.uploadArtistName);
@@ -402,9 +388,10 @@ export default {
             formData.append(this.fileList[i].name, this.fileList[i].raw);
           }
 
+          let url = this.isAdmin ? "admin/upload/" : "upload/";
           const submitResult = await axios({
             method: "post",
-            url: "upload/",
+            url: url,
             data: formData,
             headers: {
               "Content-Type": "multipart/form-data",
@@ -470,7 +457,14 @@ export default {
       this.ifShowAlbumDetail = true;
     },
     async handleStar() {
+      if (this.headerName == "Personal Collection") {
+        this.headerName = "All Albums";
+      }
+      else {
+        this.headerName = "Personal Collection";
+      }
       this.ifShowAllAlbum = !this.ifShowAllAlbum;
+      this.ifDeleteShow = false;
       if (this.ifShowAllAlbum) {
         var csrftoken = Cookies.get("csrftoken");
         let showCollectionResult = await axios
@@ -536,12 +530,104 @@ export default {
       }
     },
     async handleSearch() {
-      var csrftoken = Cookies.get("csrftoken");
       if (this.searchCat == "Artist") {
-        let artistName = this.searchInput;
-        let searchResult = await axios
-          .get(
-            "search-artist?target=" + artistName,
+        this.musicList = await this.searchArtist(this.searchInput);
+      } else if (this.searchCat == "Album") {
+        this.musicList = await this.searchAlbum(this.searchInput);
+      } else if (this.searchCat == "All") {
+        this.musicList = await this.searchArtist(this.searchInput);
+        this.musicList = this.musicList.concat(
+          await this.searchAlbum(this.searchInput)
+        );
+      } else {
+        console.log("wtf");
+      }
+    },
+    async searchArtist(artistName) {
+      var csrftoken = Cookies.get("csrftoken");
+      let searchResult = await axios
+        .get("search-artist?target=" + artistName, {
+          headers: {
+            "Content-Type": "application/json;charset=UTF-8",
+            "X-CSRFToken": csrftoken,
+          },
+        })
+        .then(function (response) {
+          console.log(response);
+          return response;
+        })
+        .catch(function (error) {
+          console.log(error);
+          return error;
+        });
+      let statusCode = searchResult["status"];
+      if (statusCode == "200") {
+        return searchResult["data"]["albums"];
+      } else {
+        ElMessage.error("Search fail!");
+        return [];
+      }
+    },
+    async searchAlbum(albumName) {
+      var csrftoken = Cookies.get("csrftoken");
+      let searchResult = await axios
+        .get("search-album-name?target=" + albumName, {
+          headers: {
+            "Content-Type": "application/json;charset=UTF-8",
+            "X-CSRFToken": csrftoken,
+          },
+        })
+        .then(function (response) {
+          console.log(response);
+          return response;
+        })
+        .catch(function (error) {
+          console.log(error);
+          return error;
+        });
+      let statusCode = searchResult["status"];
+      if (statusCode == "200") {
+        return searchResult["data"]["albums"];
+      } else {
+        ElMessage.error("Search fail!");
+        return [];
+      }
+    },
+    showDeleteButton() {
+      if (this.ifShowAllAlbum && !this.isAdmin) {
+        console.log("wtf");
+      } else {
+        this.ifDeleteShow = !this.ifDeleteShow;
+      }
+    },
+    async removeAlbum(id) {
+      const messageResult = await ElMessageBox.confirm(
+        "Confirm to remove the Album?",
+        "Warning",
+        {
+          confirmButtonText: "OK",
+          cancelButtonText: "Cancel",
+          type: "warning",
+        }
+      )
+        .then(() => {
+          return "success";
+        })
+        .catch(() => {
+          return "failure";
+        });
+      var csrftoken = Cookies.get("csrftoken");
+      if (messageResult == "success") {
+        let url =
+          !this.isAdmin || (this.isAdmin && !this.ifShowAllAlbum)
+            ? "remove-album/"
+            : "admin/remove/";
+        let removeResult = await axios
+          .post(
+            url,
+            {
+              id: id,
+            },
             {
               headers: {
                 "Content-Type": "application/json;charset=UTF-8",
@@ -557,14 +643,25 @@ export default {
             console.log(error);
             return error;
           });
-        let statusCode = searchResult["status"];
+        let statusCode = removeResult["status"];
         if (statusCode == "200") {
-          this.musicList = searchResult["data"]["albums"];
+          this.ifShowAllAlbum = false;
+          this.ifDeleteShow = false;
+          this.showCollection();
+          ElMessage({
+            type: "success",
+            message: "Successfully remove the album",
+          });
         } else {
-          ElMessage.error("Search fail!");
+          ElMessage.error("Fail to remove the album!");
         }
+      } else {
+        ElMessage({
+          type: "info",
+          message: "Canceled",
+        });
       }
-    }
+    },
   },
 };
 </script>
@@ -883,29 +980,6 @@ input.search-box-input:focus {
   float: left;
   overflow: visible;
 }
-#user-dropdown {
-  background-color: hsla(0, 0%, 100%, 1) !important;
-  border-radius: 20px;
-  will-change: visibility;
-  position: absolute;
-  z-index: 99;
-  width: 20%;
-  top: 66px;
-  left: 0px;
-  visibility: hidden;
-  opacity: 0;
-  transform: translateY(-4px);
-  transition: opacity 0.25s, visibility 0.25s, transform 0.25s;
-  margin: 0 auto;
-  list-style-type: none;
-  padding: 5px;
-}
-#logo-div:hover #user-dropdown {
-  pointer-events: auto;
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
 #search-select {
   display: flex;
   flex-direction: column;
@@ -966,17 +1040,22 @@ input.search-box-input:focus {
 #music-list-ul {
   padding: 0;
   padding-top: 80px;
+  height: calc(100% - 112px);
 }
 .music-card {
-  display: inline-block;
+  background-color: hsla(0, 0%, 100%, 0.9) !important;
+  backdrop-filter: blur(5px);
+  display: block;
   margin: 20px;
   transition: box-shadow 0.2s, transform 0.2s;
   border-radius: 10px;
+  width: calc(100% - 40px);
+  text-align: left;
 }
 .music-card:hover {
   box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 5px 8px 0 rgba(0, 0, 0, 0.14),
     0 1px 14px 0 rgba(0, 0, 0, 0.5) !important;
-  transform: scale(1.03) perspective(0px);
+  transform: scale(1.01) perspective(0px);
 }
 #top-bar {
   position: fixed;
@@ -1060,6 +1139,19 @@ input.input:focus {
   backdrop-filter: blur(5px);
   transition: all 0.5s ease-in-out;
 }
+#album-container-outer {
+  width: calc(100% - 20px);
+  height: calc(100% - 86px);
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background-color: hsla(0, 0%, 100%, 0.3) !important;
+  box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 5px 8px 0 rgb(0 0 0 / 14%),
+    0 1px 14px 0 rgb(0 0 0 / 12%) !important;
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+  transition: all 0.5s ease-in-out;
+}
 .buttom {
   margin-top: 13px;
   line-height: 12px;
@@ -1080,5 +1172,13 @@ input.input:focus {
   border-radius: 10px;
   backdrop-filter: blur(5px);
   transition: all 0.5s ease-in-out;
+}
+#album-container-outer-header {
+  background-color: #7b7b7b !important;
+  color: white !important;
+  font-size: 28px;
+  font-weight: 500;
+  border-radius: 10px;
+  align-items: center;
 }
 </style>
