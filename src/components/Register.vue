@@ -68,7 +68,7 @@ export default {
       var csrftoken = Cookies.get("csrftoken");
       const registerResult = await axios
         .post(
-          "http://127.0.0.1:8000/register/",
+          "register/",
           {
             auth: {
               "user-name": userName,
