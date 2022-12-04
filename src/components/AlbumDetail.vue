@@ -71,9 +71,9 @@
     </el-main>
     <!-- <el-affix offset="20" position="bottom"> -->
     <audio
+      controls
       class="audio"
       :src="url"
-      controls
       @play="recordLastPlay"
       autoplay="true"
     ></audio>
