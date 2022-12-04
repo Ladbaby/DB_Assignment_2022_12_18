@@ -152,48 +152,77 @@
       <div id="music-list-div" v-else-if="currentTab == 'main'">
         <el-container id="album-container-outer">
           <el-header id="album-container-outer-header">
-              <div style="height: 100%; padding: 10px;">{{ this.headerName }}</div>
+            <div
+              style="
+                height: 100%;
+                padding: 10px;
+                animation: bounceInLeft;
+                animation-duration: 0.5s;
+              "
+              v-if="!this.ifShowAllAlbum"
+            >
+              Personal Collection
+            </div>
+            <div
+              style="
+                height: 100%;
+                padding: 10px;
+                animation: bounceInRight;
+                animation-duration: 0.5s;
+              "
+              v-else
+            >
+              All Albums
+            </div>
           </el-header>
           <el-scrollbar>
-          <div id="music-list-ul">
-            <span
-              class="music-card"
-              v-for="item in musicList"
-              :key="item"
-              @click="handleAlbumClicked(item)"
-            >
-              <el-card
-                :body-style="{ padding: '5px' }"
-                style="borderRadius: 10px;width: 100%;display: flex;justify-content: space-between;align-items: center;"
-                shadow="always"
-                round
-              >
-                <template #header>
-                  <span style="font-size: 24px; font-weight: 600"
-                    >{{ item["name"] + " " }}
-                  </span>
-                  <small>{{ item["artist"] }}</small>
-                  <span style="position: absolute; right: 20px">
-                    <el-button
-                      type="warning"
-                      icon="Star"
-                      circle
-                      v-show="ifShowAllAlbum"
-                      @click="addToCollection(item.id)"
-                    />
-                    <el-button
-                      type="danger"
-                      icon="Delete"
-                      circle
-                      v-show="ifDeleteShow"
-                      @click="removeAlbum(item.id)"
-                    />
-                  </span>
-                </template>
-              </el-card>
-            </span>
-            <el-empty v-if="musicList.length == 0"/>
-          </div>
+            <div id="music-list-ul">
+              <TransitionGroup name="list">
+                <span
+                  class="music-card"
+                  v-for="item in musicList"
+                  :key="item"
+                  @click="handleAlbumClicked(item)"
+                >
+                  <el-card
+                    :body-style="{ padding: '5px' }"
+                    style="
+                      borderradius: 10px;
+                      width: 100%;
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                    "
+                    shadow="always"
+                    round
+                  >
+                    <template #header>
+                      <span style="font-size: 24px; font-weight: 600"
+                        >{{ item["name"] + " " }}
+                      </span>
+                      <small>{{ item["artist"] }}</small>
+                      <span style="position: absolute; right: 20px">
+                        <el-button
+                          type="warning"
+                          icon="Star"
+                          circle
+                          v-show="ifShowAllAlbum"
+                          @click="addToCollection(item.id)"
+                        />
+                        <el-button
+                          type="danger"
+                          icon="Delete"
+                          circle
+                          v-show="ifDeleteShow"
+                          @click="removeAlbum(item.id)"
+                        />
+                      </span>
+                    </template>
+                  </el-card>
+                </span>
+              </TransitionGroup>
+              <el-empty v-if="musicList.length == 0" />
+            </div>
           </el-scrollbar>
         </el-container>
         <Transition name="add-item-up">
@@ -229,7 +258,10 @@
             @click="handleStar"
           />
         </Transition>
-        <Transition name="tool-bar-transition" v-if="!(!isAdmin && ifShowAllAlbum)">
+        <Transition
+          name="tool-bar-transition"
+          v-if="!(!isAdmin && ifShowAllAlbum)"
+        >
           <el-button
             type="danger"
             icon="Delete"
@@ -286,7 +318,6 @@ export default {
       searchCat: "All",
       searchInput: "",
       ifDeleteShow: false,
-      headerName: "Personal Collection", // Personal Collection, All Albums
     };
   },
   watch: {
@@ -457,12 +488,6 @@ export default {
       this.ifShowAlbumDetail = true;
     },
     async handleStar() {
-      if (this.headerName == "Personal Collection") {
-        this.headerName = "All Albums";
-      }
-      else {
-        this.headerName = "Personal Collection";
-      }
       this.ifShowAllAlbum = !this.ifShowAllAlbum;
       this.ifDeleteShow = false;
       if (this.ifShowAllAlbum) {
@@ -1180,5 +1205,22 @@ input.input:focus {
   font-weight: 500;
   border-radius: 10px;
   align-items: center;
+}
+.list-move, /* apply transition to moving elements */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+/* ensure leaving items are taken out of layout flow so that moving
+   animations can be calculated correctly. */
+.list-leave-active {
+  position: absolute;
 }
 </style>
