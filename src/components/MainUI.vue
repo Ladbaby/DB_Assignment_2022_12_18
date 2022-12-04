@@ -369,9 +369,9 @@ export default {
     },
     showSearchBox() {
       this.ifSearchShow = !this.ifSearchShow;
-      if (!this.ifSearchShow) {
-        this.showCollection();
-      }
+      // if (!this.ifSearchShow) {
+      //   this.showCollection();
+      // }
     },
     handleChange(uploadFile) {
       // this.src = URL.createObjectURL(uploadFile.raw);
@@ -486,6 +486,7 @@ export default {
     handleAlbumClicked(album) {
       this.selectedAlbum = album;
       this.ifShowAlbumDetail = true;
+      this.ifSearchShow = false;
     },
     async handleStar() {
       this.ifShowAllAlbum = !this.ifShowAllAlbum;
