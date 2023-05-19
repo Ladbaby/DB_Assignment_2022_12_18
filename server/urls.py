@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('', views.index, name="index"),
     re_path(r"^(js|css|img)\/(.*)$", views.serve),
+    path('favicon.ico', views.serveico),
     path('register/', views.register, name="register"),
     path('login/', views.login, name="login"),
     path('logout/', views.logout, name="logout")

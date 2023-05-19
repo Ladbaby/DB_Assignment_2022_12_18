@@ -60,6 +60,17 @@ def serve(request, folder, file_name):
             response.write(content)
             return response
 
+def serveico(request):
+    current_path = os.path.dirname(__file__)
+    parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
+    dist_path = os.path.join(parent_path, 'dist')   
+    file_path = os.path.join(dist_path, "favicon.ico")
+    with open(file_path, 'rb') as file:
+        content = file.read()
+        response = HttpResponse()
+        response['Content-Type'] = 'image/x-icon'
+        response.write(content)
+        return response
 
 def register(request):
     length = int(request.headers.get('Content-Length'))
